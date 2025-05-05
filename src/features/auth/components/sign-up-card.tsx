@@ -1,6 +1,5 @@
 import { DottedSeparator } from "@/components/dotted-separator";
-import { FcGoogle } from "react-icons/fc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,21 +8,38 @@ import Link from "next/link";
 
 
 
-export const SigInCard = () => {
+export const SigUpCard = () => {
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-stone-950">
       <CardHeader className="flex items-center justify-center text-center">
         <CardTitle className="text-2xl">
-          Welcome back
+          Sign Up
         </CardTitle>
+        <CardDescription>
+          By signing up, you agree to our{" "}
+          <Link href="/terms">
+            <span className="text-blue-700"> Pirvacy Policy</span>
+            {" "} and {" "}
+          </Link>
+          <Link href="/term">
+            <span className="text-blue-700"> Terms of Service </span>
+          </Link>
+        </CardDescription>
       </CardHeader>
+
+
 
       <div className="px-7 mb-2">
         <DottedSeparator />
       </div>
 
-      <CardContent className="px-7 mb-2 space-y-4">
+      <CardContent className="px-7 mb-2 space-y-4" >
         <form className="space-y-4">
+          <Input
+            type="text"
+            placeholder="Enter your name"
+            autoComplete="current-password"
+          />
           <Input
             type="email"
             placeholder="Enter email address"
@@ -36,7 +52,7 @@ export const SigInCard = () => {
           />
         </form>
 
-        <Button type="submit" size="lg" variant="primary" className="w-full">
+        <Button type="submit" size="lg" variant="primary" className="w-full "  >
           Log in
         </Button>
 
@@ -46,17 +62,12 @@ export const SigInCard = () => {
         <DottedSeparator />
       </div>
 
-      <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button size="lg" className="w-full items-center text-base" variant="outline">
-          <FcGoogle className="size-6 mr-2" />
-          Login with Google
-        </Button>
-      </CardContent>
+
       <CardContent className="p-7 text-center">
         <p className="text-sm text-muted-foreground">
-          Don’t have an account?{" "}
-          <Link href="/sign-up" className="text-blue-600 hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/sign-in" className="text-blue-600 hover:underline">
+            Sign in
           </Link>
         </p>
       </CardContent>
