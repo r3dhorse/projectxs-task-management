@@ -1,55 +1,61 @@
-import { DottedSeparator } from "@/components/dotted-separator";
+"use client";
+
+import { z } from "zod";
 import { FcGoogle } from "react-icons/fc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DottedSeparator } from "@/components/dotted-separator";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
+import { loginSchema } from "../schemas";
+import { useLogin } from "../api/use-login";
 
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1, "Required"),
-});
 
-export const SigInCard = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+export const SignInCard = () => {
+  const { mutate } = useLogin();
+  
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    form.reset({ email: values.email, password: "" });
-    console.log({ values });
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    mutate({ json: values });
+
   };
 
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-stone-950">
       <CardHeader className="flex items-center justify-center text-center">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
+        <CardTitle className="text-2xl">
+          Welcome back
+        </CardTitle>
       </CardHeader>
 
       <div className="px-7 mb-2">
         <DottedSeparator />
       </div>
 
-      <CardContent className="px-7 mb-2 space-y-4">
+      <CardContent className="px-7">
         <Form {...form}>
-          <form
-            className="space-y-4"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               name="email"
               control={form.control}
@@ -86,12 +92,7 @@ export const SigInCard = () => {
               )}
             />
 
-            <Button
-              type="submit"
-              size="lg"
-              variant="primary"
-              className="w-full"
-            >
+            <Button type="submit" size="lg" variant="primary" className="w-full">
               Log in
             </Button>
           </form>
@@ -103,11 +104,7 @@ export const SigInCard = () => {
       </div>
 
       <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button
-          size="lg"
-          className="w-full items-center text-base"
-          variant="outline"
-        >
+        <Button size="lg" className="w-full items-center text-base" variant="outline">
           <FcGoogle className="size-6 mr-2" />
           Login with Google
         </Button>
@@ -123,6 +120,4 @@ export const SigInCard = () => {
       </CardContent>
     </Card>
   );
-
-  
 };
