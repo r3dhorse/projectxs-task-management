@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Task Management",
+  description: "Develop By Xy",
+};
 
 export default function RootLayout({
   children,

@@ -1,67 +1,124 @@
 import { DottedSeparator } from "@/components/dotted-separator";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 
-
+const formSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string().min(8, "Required"),
+});
 
 
 export const SigUpCard = () => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+
+    console.log({ values });
+  };
+
+
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-stone-950">
       <CardHeader className="flex items-center justify-center text-center">
-        <CardTitle className="text-2xl">
-          Sign Up
-        </CardTitle>
-        <CardDescription>
-          By signing up, you agree to our{" "}
-          <Link href="/terms">
-            <span className="text-blue-700"> Pirvacy Policy</span>
-            {" "} and {" "}
-          </Link>
-          <Link href="/term">
-            <span className="text-blue-700"> Terms of Service </span>
-          </Link>
-        </CardDescription>
+        <CardTitle className="text-2xl">Sign up</CardTitle>
       </CardHeader>
-
-
 
       <div className="px-7 mb-2">
         <DottedSeparator />
       </div>
 
-      <CardContent className="px-7 mb-2 space-y-4" >
-        <form className="space-y-4">
-          <Input
-            type="text"
-            placeholder="Enter your name"
-            autoComplete="current-password"
-          />
-          <Input
-            type="email"
-            placeholder="Enter email address"
-            autoComplete="email"
-          />
-          <Input
-            type="password"
-            placeholder="Enter password"
-            autoComplete="current-password"
-          />
-        </form>
+      <CardContent className="px-7 mb-2 space-y-4">
+        <Form {...form}>
+          <form
+            className="space-y-4"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <FormField
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="name"
+                      placeholder="Enter your name"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <Button type="submit" size="lg" variant="primary" className="w-full "  >
-          Log in
-        </Button>
+            <FormField
+              name="email"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="Enter email address"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            <FormField
+              name="password"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="Enter password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              size="lg"
+              variant="primary"
+              className="w-full"
+            >
+              Register
+            </Button>
+          </form>
+        </Form>
       </CardContent>
 
       <div className="px-7">
         <DottedSeparator />
       </div>
-
 
       <CardContent className="p-7 text-center">
         <p className="text-sm text-muted-foreground">
@@ -71,9 +128,6 @@ export const SigUpCard = () => {
           </Link>
         </p>
       </CardContent>
-
-
-
     </Card>
   );
 }
