@@ -1,15 +1,11 @@
-
-
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-
 
 interface AuthLayoutProps {
   children: React.ReactNode;
 };
 
 const AuthLayout = ({ children }: AuthLayoutProps) => {
-  // const pathname = usePathname();
+
 
   return (
     <main className="bg-neutral-50 min-h-screen">
