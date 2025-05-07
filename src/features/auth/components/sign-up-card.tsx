@@ -1,4 +1,4 @@
-
+"use client";
 
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,8 +21,8 @@ import { useRegister } from "../api/use-register";
 
 
 
-export const SigUpCard = () => {
-  const { mutate } = useRegister();
+export const SignUpCard = () => {
+  const { mutate, isPending } = useRegister();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -106,6 +106,7 @@ export const SigUpCard = () => {
               )}
             />
             <Button
+              disabled={isPending}
               type="submit"
               size="lg"
               variant="primary"

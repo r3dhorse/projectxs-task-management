@@ -1,7 +1,5 @@
-"use client"
-
 import { getCurrent } from "@/features/auth/action";
-import { SigUpCard } from "@/features/auth/components/sign-up-card";
+import { SignUpCard } from "@/features/auth/components/sign-up-card";
 import { redirect } from "next/navigation";
 
 const SignUpPage = async () => {
@@ -12,7 +10,7 @@ const SignUpPage = async () => {
 
   return (
 
-    <SigUpCard />
+    <SignUpCard />
 
   )
 }
