@@ -14,9 +14,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <Sidebar />
         </div>
         <div className="lg:pl-[264px] w-full">
-          <div className="mx-auto max-w-screen-2xl h-full">
+          <div className="mx-auto max-w-screen-2xl h-full px-4"> {/* Add px-4 here for horizontal spacing */}
             <Navbar />
-            <main className="h-full py-8 px-6 flex flex-col">
+            <main className="h-full py-4 flex flex-col">
               {children}
             </main>
           </div>
@@ -25,5 +25,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     </div>
   );
 };
+
 
 export default DashboardLayout;
