@@ -5,6 +5,7 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
 import { ID, Query } from "node-appwrite";
 import { MemberRole } from "@/features/members/types";
+import { generateInviteCode } from "@/lib/utils";
 
 const app = new Hono()
 
@@ -49,13 +50,16 @@ const app = new Hono()
       const user = c.get("user");
       const { name } = c.req.valid("json")
 
+
+
       const workspace = await databases.createDocument(
         DATABASE_ID,
         WORKSPACES_ID,
         ID.unique(),
         {
           name,
-          userId: user.$id
+          userId: user.$id,
+          inviteCode: generateInviteCode(10),
         },
       );
 

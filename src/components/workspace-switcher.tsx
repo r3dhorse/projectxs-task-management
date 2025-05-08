@@ -18,7 +18,7 @@ export const WorkspaceSwitcher = () => {
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase text-neutral-500">Workspaces</p>
-        <RiAddCircleFill className="size-6 text-neutral-500 cursor-pointer hover:opacity-75 transition" />
+        <RiAddCircleFill className="size-6 text-neutral-950 cursor-pointer hover:opacity-75 transition" />
       </div>
 
       {isLoading ? (
@@ -42,7 +42,7 @@ export const WorkspaceSwitcher = () => {
                     <div className="w-6 h-6 rounded-full bg-blue-900 text-white flex items-center justify-center text-xs font-bold uppercase">
                       {workspace.name.charAt(0)}
                     </div>
-                    - {workspace.name}
+                    {workspace.name}
                   </span>
                 </SelectItem>
               ))
