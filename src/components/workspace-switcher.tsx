@@ -10,15 +10,24 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { useCreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal";
 
 export const WorkspaceSwitcher = () => {
+  const workspaceId = useWorkspaceId();
+  const router = useRouter();
   const { data: workspaces, isLoading, isError } = useGetWorkspaces();
+  const { open } = useCreateWorkspaceModal();
+  const onSelect = (id: string) => {
+    router.push(`/workspaces/${id}`);
+  };
 
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase text-neutral-500">Workspaces</p>
-        <RiAddCircleFill className="size-6 text-neutral-950 cursor-pointer hover:opacity-75 transition" />
+        <RiAddCircleFill onClick={open} className="size-6 text-neutral-950 cursor-pointer hover:opacity-75 transition" />
       </div>
 
       {isLoading ? (
@@ -26,7 +35,7 @@ export const WorkspaceSwitcher = () => {
       ) : isError ? (
         <p className="text-sm text-red-500">Failed to load workspaces.</p>
       ) : (
-        <Select>
+        <Select onValueChange={onSelect} value={workspaceId}>
           <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
             <SelectValue placeholder="No workspace selected" />
           </SelectTrigger>
