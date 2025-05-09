@@ -10,13 +10,19 @@ import { DottedSeparator } from "@/components/dotted-separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCreateWorkspace } from "../api/use-create-workspace";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+
 
 interface CreateWorkspaceFormProps {
   onCancel?: () => void;
 }
 
 export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
+  const router = useRouter();
   const { mutate, isPending } = useCreateWorkspace();
+
+
 
   const form = useForm<z.infer<typeof createWorkspaceSchema>>({
     resolver: zodResolver(createWorkspaceSchema),
@@ -26,9 +32,14 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
   });
 
   const onSubmit = (values: z.infer<typeof createWorkspaceSchema>) => {
-    mutate({ json: values })
-  };
+    mutate({ json: values }, {
+      onSuccess: ({ data }) => {
+        form.reset();
+        router.push(`/workspaces/${data.$id}`);
+      }
+    });
 
+  };
 
   return (
     <Card className="w-full h-full border-none shadow-none">
@@ -73,6 +84,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                   variant="secondary"
                   onClick={onCancel}
                   disabled={isPending}
+                  className={cn(!onCancel && "invisible")}
                 >
                   Cancel
                 </Button>

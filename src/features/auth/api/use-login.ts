@@ -30,6 +30,7 @@ export const useLogin = () => {
     onSuccess: () => {
       toast.success("Welcome to Task Manager");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["current"] });
       router.refresh();
     },
 
