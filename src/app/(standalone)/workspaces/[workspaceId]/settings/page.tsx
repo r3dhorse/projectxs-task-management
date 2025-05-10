@@ -1,0 +1,23 @@
+import { getCurrent } from "@/features/auth/action";
+import { redirect } from "next/navigation";
+
+interface WorkspaceIdSettingsPageProps {
+  params: {
+    workspaceId: string;
+  };
+}
+
+const WorkspaceIdSettingsPage = async ({
+  params,
+}: WorkspaceIdSettingsPageProps) => {
+  const user = await getCurrent();
+  if (!user) redirect("/sign-in");
+
+  return (
+    <div>
+      WorkspaceIdSettingsPage: {params.workspaceId}
+    </div>
+  );
+};
+
+export default WorkspaceIdSettingsPage;

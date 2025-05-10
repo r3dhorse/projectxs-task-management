@@ -1,9 +1,10 @@
 "use client";
 
-
 import { SettingsIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
-import { GoCheckCircle, GoCheckCircleFill, GoHome, GoHomeFill } from "react-icons/go"
+import { GoCheckCircle, GoCheckCircleFill, GoHome, GoHomeFill } from "react-icons/go";
+import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const routes = [
@@ -34,26 +35,30 @@ const routes = [
 ];
 
 export const Navigation = () => {
+  const workspaceId = useWorkspaceId();
+  const pathname = usePathname();
+
   return (
-    < ul className="flex flex-col" >
+    <ul className="flex flex-col">
       {routes.map((item) => {
-        const isActive = false;
-        const Icon = isActive ? item.activeIcon : item.icon
+        const fullHref = `/workspaces/${workspaceId}${item.href}`;
+        const isActive = pathname === fullHref;
+        const Icon = isActive ? item.activeIcon : item.icon;
 
         return (
-          <Link key={item.href} href={item.href}>
-            <div className={cn(
-              "flex item-center gap-2.5 p-2.5 rounded-md front-medium hover:text-primary transition text-neutral-500",
-              isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
-
-            )}>
-              <Icon className="size-5 text-neutral-500" />
+          <Link key={item.href} href={fullHref}>
+            <div
+              className={cn(
+                "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-primary transition text-neutral-500",
+                isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
+              )}
+            >
+              <Icon className={cn("size-5", isActive ? "text-primary" : "text-neutral-500")} />
               {item.label}
             </div>
           </Link>
-        )
-
+        );
       })}
-    </ul >
+    </ul>
   );
 };
