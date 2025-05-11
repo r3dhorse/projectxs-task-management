@@ -8,7 +8,6 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
 import { z } from "zod"
-import { error } from "console";
 import { Workspace } from "../types";
 
 

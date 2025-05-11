@@ -45,7 +45,7 @@ const app = new Hono()
               name: user.name,
               email: user.email,
             };
-          } catch (err) {
+          } catch {
             return {
               ...member,
               name: "Unknown",
@@ -54,6 +54,7 @@ const app = new Hono()
           }
         })
       );
+
 
 
       return c.json({
