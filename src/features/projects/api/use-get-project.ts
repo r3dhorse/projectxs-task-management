@@ -6,7 +6,7 @@ interface UseGetProjectsProps {
 };
 
 
-export const useGetProject = ({
+export const useGetProjects = ({
   workspaceId,
 }: UseGetProjectsProps) => {
   const query = useQuery({
