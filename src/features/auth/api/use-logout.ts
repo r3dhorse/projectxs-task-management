@@ -24,8 +24,7 @@ export const useLogout = () => {
 
     onSuccess: () => {
       toast.success("Logout");
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      queryClient.invalidateQueries({ queryKey: ["current"] });
+      queryClient.invalidateQueries();
       window.location.href = "/";
     },
 

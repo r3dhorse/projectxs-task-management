@@ -5,7 +5,6 @@ interface UseGetProjectsProps {
   workspaceId: string
 };
 
-
 export const useGetProjects = ({
   workspaceId,
 }: UseGetProjectsProps) => {

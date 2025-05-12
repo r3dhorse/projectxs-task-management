@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
 import { z } from "zod";
-import { creatProjectSchema } from "../schema"
+import { createProjectSchema } from "../schemas"
 import { generateInviteCode } from "@/lib/utils";
 import { MemberRole } from "@/features/members/types";
 
@@ -15,7 +15,7 @@ const app = new Hono()
   .post(
     "/",
     sessionMiddleware,
-    zValidator("form", creatProjectSchema),
+    zValidator("form", createProjectSchema),
     async (c) => {
       const databases = c.get("databases");
       const user = c.get("user");
@@ -38,7 +38,6 @@ const app = new Hono()
         ID.unique(),
         {
           name,
-          userId: user.$id,
           workspaceId,
         },
       );
