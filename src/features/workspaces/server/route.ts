@@ -10,9 +10,6 @@ import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
 import { z } from "zod"
 import { Workspace } from "../types";
 
-
-
-
 const app = new Hono()
 
   .get(

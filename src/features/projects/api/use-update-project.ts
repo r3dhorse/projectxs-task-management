@@ -5,10 +5,10 @@ import { client } from "@/lib/rpc";
 import { useRouter } from "next/navigation";
 
 
-type ResponseType = InferResponseType<typeof client.api.workspaces[":workspaceId"]["reset-invite-code"]["$post"], 200>;
-type RequestType = InferRequestType<typeof client.api.workspaces[":workspaceId"]["reset-invite-code"]["$post"]>;
+type ResponseType = InferResponseType<typeof client.api.projects[":projectId"]["$patch"], 200>;
+type RequestType = InferRequestType<typeof client.api.projects[":projectId"]["$patch"]>;
 
-export const useResetInviteCode = () => {
+export const useUpdateProject = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -18,24 +18,26 @@ export const useResetInviteCode = () => {
     RequestType
   >({
 
-    mutationFn: async ({ param }) => {
-      const response = await client.api.workspaces[":workspaceId"]["reset-invite-code"]["$post"]({ param });
+    mutationFn: async ({ form, param }) => {
+
+      const response = await client.api.projects[":projectId"]["$patch"]({ form, param });
 
       if (!response.ok) {
-        throw new Error("Failed to reset invite code");
+        throw new Error("Failed to update project");
       }
 
       return await response.json();
     },
 
     onSuccess: ({ data }) => {
-      toast.success("Invite code reset");
-      router.refresh();
+      toast.success("Project updated");
+      router.refresh()
       queryClient.invalidateQueries();
+
     },
 
     onError: () => {
-      toast.error("Failed to reset invite code");
+      toast.error("Failed to update project");
     },
 
   });

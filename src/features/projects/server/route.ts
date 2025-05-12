@@ -1,13 +1,13 @@
-import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, WORKSPACES_ID } from "@/config";
+import { DATABASE_ID, PROJECTS_ID, WORKSPACES_ID } from "@/config";
 import { getMember } from "@/features/members/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
 import { z } from "zod";
-import { createProjectSchema } from "../schemas"
-import { generateInviteCode } from "@/lib/utils";
+import { createProjectSchema, updateProjectSchema } from "../schemas"
 import { MemberRole } from "@/features/members/types";
+import { Project } from "../types";
 
 
 const app = new Hono()
@@ -81,6 +81,45 @@ const app = new Hono()
 
       return c.json({ data: projects });
     }
-  );
+  )
+
+  .patch(
+    "/:projectId",
+    sessionMiddleware,
+    zValidator("form", updateProjectSchema),
+    async (c) => {
+      const databases = c.get("databases")
+      const user = c.get("user")
+
+      const { projectId } = c.req.param();
+      const { name } = c.req.valid("form");
+
+      const existingProject = await databases.getDocument<Project>(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId,
+      );
+
+      const member = await getMember({
+        databases,
+        workspaceId: existingProject.workspaceId,
+        userId: user.$id
+      });
+      if (!member) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const project = await databases.updateDocument(
+        DATABASE_ID,
+        PROJECTS_ID,
+        projectId,
+        {
+          name
+        }
+      );
+      return c.json({ data: project })
+    }
+
+  )
 
 export default app;
