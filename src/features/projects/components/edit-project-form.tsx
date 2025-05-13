@@ -12,9 +12,10 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Project } from "../types";
-import { ArrowLeftIcon, CopyIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import { useUpdateProject } from "../api/use-update-project";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useDeleteProject } from "../api/use-delete-project";
 import { toast } from 'sonner';
 
 
@@ -28,9 +29,13 @@ interface EditProjectFormProps {
 export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProps) => {
   const router = useRouter();
   const { mutate, isPending } = useUpdateProject();
+  const {
+    mutate: deleteProject,
+    isPending: isDeletingProject,
+  } = useDeleteProject();
 
   const [DeleteDialog, confirmDelete] = useConfirm(
-    "Delete Workspace",
+    "Delete Project",
     "This action cannot be undone.",
     "secondary",
   );
@@ -44,8 +49,21 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
 
   const handleDelete = async () => {
     const ok = await confirmDelete();
-    if (!ok) return
+    if (!ok) return;
+
+    deleteProject(
+      {
+        param: { projectId: initialValues.$id },
+      },
+      {
+        onSuccess: () => {
+          window.location.href = `/workspaces/${initialValues.workspaceId}`;
+        },
+      }
+    );
   };
+
+
 
   const onSubmit = (values: z.infer<typeof updateProjectSchema>) => {
     const finalValues = {
