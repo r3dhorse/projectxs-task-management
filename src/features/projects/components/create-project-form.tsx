@@ -23,7 +23,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
   const router = useRouter();
   const { mutate, isPending } = useCreateProject();
 
-  
+
   const clientSchema = createProjectSchema.omit({ workspaceId: true });
 
   const form = useForm<z.infer<typeof clientSchema>>({
@@ -44,10 +44,12 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
       {
         onSuccess: () => {
           form.reset();
+          router.push(`/workspaces/${workspaceId}`);
         },
       }
     );
   };
+
 
   return (
     <Card className="w-full h-full border-none shadow-none">
