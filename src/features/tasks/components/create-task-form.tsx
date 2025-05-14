@@ -49,7 +49,7 @@ export const CreateTaskForm = ({
     mutate({ json: { ...values, workspaceId } }, {
       onSuccess: () => {
         form.reset();
-        // TODO: Redirect to new task
+        onCancel?.();
       },
     });
   };
