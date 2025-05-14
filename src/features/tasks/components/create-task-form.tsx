@@ -38,14 +38,14 @@ export const CreateTaskForm = ({
   const router = useRouter();
   const { mutate, isPending } = useCreateTask();
 
-  const form = useForm<z.infer<typeof createTaskSchema>>({
-    resolver: zodResolver(createTaskSchema),
-    defaultValues: {
-      workspaceId,
-    },
+
+  const schemaWithoutWorkspaceId = createTaskSchema.omit({ workspaceId: true });
+
+  const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
+    resolver: zodResolver(schemaWithoutWorkspaceId),
   });
 
-  const onSubmit = (values: z.infer<typeof createTaskSchema>) => {
+  const onSubmit = (values: z.infer<typeof schemaWithoutWorkspaceId>) => {
     mutate({ json: { ...values, workspaceId } }, {
       onSuccess: () => {
         form.reset();
