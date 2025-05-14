@@ -21,20 +21,19 @@ export const useCreateTask = () => {
       const response = await client.api.tasks["$post"]({ json });
 
       if (!response.ok) {
-        throw new Error("Failed to create task");
+        const message = await response.text();
+        throw new Error(message || "Failed to create task");
       }
-
       return await response.json();
+    },
+
+    onError: (error) => {
+      toast.error(error.message || "Failed to create task");
     },
 
     onSuccess: () => {
       toast.success("Task created");
       queryClient.invalidateQueries();
-
-    },
-
-    onError: () => {
-      toast.error("Failed to create task");
     },
 
   });

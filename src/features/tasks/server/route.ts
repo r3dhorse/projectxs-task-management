@@ -152,48 +152,59 @@ const app = new Hono()
         workspaceId,
         projectId,
         dueDate,
-        assigneeId
-      } = c.req.valid("json")
+        assigneeId,
+        description, // optional field
+      } = c.req.valid("json");
 
+      // ✅ FIX: use user.$id instead of user.$createdAt
       const member = await getMember({
         databases,
         workspaceId,
-        userId: user.$createdAt
+        userId: user.$id,
       });
+
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
-      const highestPositionTask = await databases.listDocuments(
-        DATABASE_ID,
-        TASKS_ID,
-        [
-          Query.equal("status", status),
-          Query.equal("workspaceId", workspaceId),
-          Query.orderAsc("position"),
-          Query.limit(1)
-        ],
-      );
 
-      const newPosition =
-        highestPositionTask.documents.length > 0
-          ? highestPositionTask.documents[0].position + 1000
-          : 1000;
+      try {
+        const highestPositionTask = await databases.listDocuments(
+          DATABASE_ID,
+          TASKS_ID,
+          [
+            Query.equal("status", status),
+            Query.equal("workspaceId", workspaceId),
+            Query.orderAsc("position"),
+            Query.limit(1),
+          ]
+        );
 
-      const task = await databases.createDocument(
-        DATABASE_ID,
-        TASKS_ID,
-        ID.unique(),
-        {
-          name,
-          status,
-          workspaceId,
-          projectId,
-          assigneeId,
-          position: newPosition
-        },
-      );
+        const newPosition =
+          highestPositionTask.documents.length > 0
+            ? highestPositionTask.documents[0].position + 1000
+            : 1000;
 
-      return c.json({ data: task });
+        const task = await databases.createDocument(
+          DATABASE_ID,
+          TASKS_ID,
+          ID.unique(),
+          {
+            name,
+            status,
+            workspaceId,
+            projectId,
+            dueDate, // ✅ added
+            assigneeId,
+            description, // ✅ optional
+            position: newPosition,
+          }
+        );
+
+        return c.json({ data: task });
+      } catch (err) {
+        console.error("Create task error:", err);
+        return c.json({ error: "Internal Server Error" }, 500);
+      }
     }
   );
 
