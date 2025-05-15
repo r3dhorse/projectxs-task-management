@@ -33,9 +33,6 @@ export const Projects = () => {
                 isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
               )}
             >
-              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-900 text-neutral-100 text-xl font-semibold">
-                {project.name.charAt(0).toUpperCase()}
-              </div>
               <span className="truncate">{project.name}</span>
             </div>
           </Link>
