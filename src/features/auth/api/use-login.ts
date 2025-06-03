@@ -21,7 +21,8 @@ export const useLogin = () => {
       const response = await client.api.auth.login["$post"]({ json });
 
       if (!response.ok) {
-        throw new Error("Failed to login");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to login");
       }
 
       return await response.json();
@@ -34,8 +35,8 @@ export const useLogin = () => {
       router.refresh();
     },
 
-    onError: () => {
-      toast.error("Login failed");
+    onError: (error: Error) => {
+      toast.error(error.message || "Login failed");
       router.refresh();
     },
 

@@ -44,13 +44,17 @@ export const sessionMiddleware = createMiddleware<AdditionalContext>(
     const databases = new Databases(client);
     const storage = new Storage(client);
 
-    const user = await account.get();
+    try {
+      const user = await account.get();
 
-    c.set("account", account);
-    c.set("databases", databases);
-    c.set("storage", storage);
-    c.set("user", user);
+      c.set("account", account);
+      c.set("databases", databases);
+      c.set("storage", storage);
+      c.set("user", user);
 
-    await next();
+      await next();
+    } catch (error) {
+      return c.json({ error: "Invalid session" }, 401);
+    }
   },
 );

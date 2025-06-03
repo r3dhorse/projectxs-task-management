@@ -1,1 +1,1 @@
-export const AUTH_COOKIE = "xts-task-management-session";
+export const AUTH_COOKIE = "xs-task-management-session";
