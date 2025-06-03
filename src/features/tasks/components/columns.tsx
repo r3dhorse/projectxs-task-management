@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { TaskDate } from "./task-date"
 import { Badge } from "@/components/ui/badge"
 import { snakeCaseTotitleCase } from "@/lib/utils"
-import { TaskActions } from "./task-actios"
+import { TaskActions } from "./task-actions"
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -47,14 +47,14 @@ export const columns: ColumnDef<Task>[] = [
     },
 
     cell: ({ row }) => {
-      const project = row.original.project;
-
+      const project = row.original?.project;
       return (
         <div className="flex items-center gap-x-2 text-sm font-medium">
-          <p className="line-clamp-1">{project.name}</p>
+          <p className="line-clamp-1">{project?.name || 'No Project'}</p>
         </div>
-      )
+      );
     }
+
   },
 
   {
