@@ -45,6 +45,11 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
     dueDate: new Date(),
     attachmentId: "",
   });
+
+  // Validate task ID format
+  if (!params.taskId || params.taskId.length > 36 || !/^[a-zA-Z0-9_]+$/.test(params.taskId)) {
+    console.error("Invalid task ID in URL:", params.taskId);
+  }
   
   const { data: task, isLoading: isLoadingTask } = useGetTask({ 
     taskId: params.taskId 
@@ -126,12 +131,10 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
       assigneeId: editForm.assigneeId,
       projectId: editForm.projectId,
       dueDate: editForm.dueDate.toISOString(),
-      attachmentId: editForm.attachmentId || undefined,
+      attachmentId: editForm.attachmentId, // Send empty string to remove attachment
       workspaceId,
     };
 
-    console.log("Task details page - Original task:", task);
-    console.log("Task details page - Update payload:", updatePayload);
 
     updateTask(
       {
@@ -325,10 +328,10 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>
-                    <SelectItem value={TaskStatus.TODO}>To do</SelectItem>
+                    <SelectItem value={TaskStatus.TODO}>Todo</SelectItem>
                     <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
+                    <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
                     <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
-                    <SelectItem value={TaskStatus.ACHIEVE}>Achieve</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (

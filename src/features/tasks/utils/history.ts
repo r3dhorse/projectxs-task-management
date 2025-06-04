@@ -1,9 +1,20 @@
-import { Task } from "../types";
+import { Task, TaskStatus } from "../types";
 import { TaskHistoryAction, TaskHistoryChange } from "../types/history";
 
 // Helper function to normalize empty values
 function normalizeValue(value: string | undefined | null): string {
   return value || "";
+}
+
+// Helper function to normalize dates for comparison
+function normalizeDateForComparison(dateValue: string | undefined | null): string {
+  if (!dateValue) return "";
+  try {
+    // Convert to ISO date string (YYYY-MM-DD) for consistent comparison
+    return new Date(dateValue).toISOString().split('T')[0];
+  } catch {
+    return dateValue || "";
+  }
 }
 
 export function detectTaskChanges(oldTask: Task, newTask: Partial<Task>): TaskHistoryChange[] {
@@ -49,8 +60,8 @@ export function detectTaskChanges(oldTask: Task, newTask: Partial<Task>): TaskHi
     });
   }
 
-  // Due date change - handle empty strings vs null/undefined consistently
-  if (newTask.dueDate !== undefined && normalizeValue(newTask.dueDate) !== normalizeValue(oldTask.dueDate)) {
+  // Due date change - use proper date comparison
+  if (newTask.dueDate !== undefined && normalizeDateForComparison(newTask.dueDate) !== normalizeDateForComparison(oldTask.dueDate)) {
     changes.push({
       field: "dueDate",
       oldValue: oldTask.dueDate,
@@ -94,7 +105,7 @@ export function formatHistoryMessage(
       return `${userName} created this task`;
     
     case TaskHistoryAction.STATUS_CHANGED:
-      return `${userName} changed status from ${formatValue(oldValue)} to ${formatValue(newValue)}`;
+      return `${userName} changed status from ${formatStatus(oldValue)} to ${formatStatus(newValue)}`;
     
     case TaskHistoryAction.ASSIGNEE_CHANGED:
       return `${userName} changed assignee from ${formatValue(oldValue, "Unassigned")} to ${formatValue(newValue, "Unassigned")}`;
@@ -136,6 +147,25 @@ function formatDate(dateString?: string): string {
     return new Date(dateString).toLocaleDateString();
   } catch {
     return dateString;
+  }
+}
+
+function formatStatus(status?: string): string {
+  if (!status) return "None";
+  
+  switch (status) {
+    case TaskStatus.BACKLOG:
+      return "Backlog";
+    case TaskStatus.TODO:
+      return "Todo";
+    case TaskStatus.IN_PROGRESS:
+      return "In Progress";
+    case TaskStatus.IN_REVIEW:
+      return "In Review";
+    case TaskStatus.DONE:
+      return "Done";
+    default:
+      return status;
   }
 }
 

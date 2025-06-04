@@ -54,7 +54,7 @@ export const CreateTaskForm = ({
     const formattedValues = {
       ...values,
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
-      attachmentId: attachmentId || undefined,
+      attachmentId: attachmentId || "", // Send empty string instead of undefined
       workspaceId
     };
 
@@ -158,16 +158,16 @@ export const CreateTaskForm = ({
                           Backlog
                         </SelectItem>
                         <SelectItem value={TaskStatus.TODO}>
-                          To do
+                          Todo
                         </SelectItem>
                         <SelectItem value={TaskStatus.IN_PROGRESS}>
                           In Progress
                         </SelectItem>
+                        <SelectItem value={TaskStatus.IN_REVIEW}>
+                          In Review
+                        </SelectItem>
                         <SelectItem value={TaskStatus.DONE}>
                           Done
-                        </SelectItem>
-                        <SelectItem value={TaskStatus.ACHIEVE}>
-                          Achieve
                         </SelectItem>
                       </SelectContent>
                     </Select>

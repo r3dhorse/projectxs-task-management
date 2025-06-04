@@ -12,15 +12,14 @@ export const TaskDate = ({ value, className }: TaskDateProps) => {
   const endDate = new Date(value);
   const diffInDays = differenceInDays(endDate, today);
 
-  let textColor = "text-muted-foreground"
+  let textColor = "text-green-500"; // Default green for more than 7 days
 
-  if (diffInDays <= 3) {
+  if (diffInDays < 3) {
     textColor = "text-red-500";
-  } else if (diffInDays <= 7) {
+  } else if (diffInDays < 7) {
     textColor = "text-yellow-500";
-  } else if (diffInDays <= 14) {
-    textColor = "text-green-500";
   }
+
   return (
     <div className={textColor}>
       <span className={cn("truncate", className)}>
@@ -28,5 +27,4 @@ export const TaskDate = ({ value, className }: TaskDateProps) => {
       </span>
     </div>
   );
-
 };

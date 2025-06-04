@@ -241,12 +241,8 @@ const app = new Hono()
           assigneeId,
           description,
           position: newPosition,
+          attachmentId: attachmentId || "", // Always include attachmentId, empty string if not provided
         };
-
-        // Only add attachmentId if it exists and is not empty
-        if (attachmentId) {
-          taskData.attachmentId = attachmentId;
-        }
 
         const task = await databases.createDocument(
           DATABASE_ID,
@@ -332,17 +328,14 @@ const app = new Hono()
           description,
         };
 
-        // Only add attachmentId if it exists
+        // Handle attachmentId - always include if provided, allow empty string to clear attachment
         if (attachmentId !== undefined) {
-          updateData.attachmentId = attachmentId;
+          updateData.attachmentId = attachmentId; // Include attachmentId even if empty to clear it
         }
 
         // Detect what changed for history tracking
         const updatePayload = c.req.valid("json");
-        console.log("Task update - Existing task:", JSON.stringify(existingTask, null, 2));
-        console.log("Task update - Update payload:", JSON.stringify(updatePayload, null, 2));
         const changes = detectTaskChanges(existingTask, updatePayload);
-        console.log("Task update - Detected changes:", JSON.stringify(changes, null, 2));
 
         const task = await databases.updateDocument<Task>(
           DATABASE_ID,
@@ -353,24 +346,58 @@ const app = new Hono()
 
         // Create history entries for changes
         if (changes.length > 0) {
-          console.log("Creating history entries for", changes.length, "changes");
           try {
             const { users } = await createAdminClient();
             const userInfo = await users.get(user.$id);
             
             for (const change of changes) {
               let action: TaskHistoryAction;
+              let oldValue = change.oldValue || "";
+              let newValue = change.newValue || "";
               
-              // Map field to appropriate action
+              // Map field to appropriate action and resolve user names for assignee changes
               switch (change.field) {
                 case "status":
                   action = TaskHistoryAction.STATUS_CHANGED;
                   break;
                 case "assigneeId":
                   action = TaskHistoryAction.ASSIGNEE_CHANGED;
+                  // Resolve assignee IDs to names
+                  if (change.oldValue) {
+                    try {
+                      const oldMember = await databases.getDocument(DATABASE_ID, MEMBERS_ID, change.oldValue);
+                      const oldUser = await users.get(oldMember.userId);
+                      oldValue = oldUser.name;
+                    } catch {
+                      oldValue = "Unknown User";
+                    }
+                  } else {
+                    oldValue = "Unassigned";
+                  }
+                  
+                  if (change.newValue) {
+                    try {
+                      const newMember = await databases.getDocument(DATABASE_ID, MEMBERS_ID, change.newValue);
+                      const newUser = await users.get(newMember.userId);
+                      newValue = newUser.name;
+                    } catch {
+                      newValue = "Unknown User";
+                    }
+                  } else {
+                    newValue = "Unassigned";
+                  }
                   break;
                 case "projectId":
                   action = TaskHistoryAction.PROJECT_CHANGED;
+                  // Resolve project IDs to names
+                  if (change.newValue) {
+                    try {
+                      const project = await databases.getDocument(DATABASE_ID, PROJECTS_ID, change.newValue);
+                      newValue = project.name;
+                    } catch {
+                      newValue = "Unknown Project";
+                    }
+                  }
                   break;
                 case "dueDate":
                   action = TaskHistoryAction.DUE_DATE_CHANGED;
@@ -392,29 +419,23 @@ const app = new Hono()
                 taskId,
                 userId: user.$id,
                 userName: userInfo.name,
-                action,
+                action: action as string, // Convert enum to string
                 field: change.field,
-                oldValue: change.oldValue || "",
-                newValue: change.newValue || "",
+                oldValue,
+                newValue,
                 timestamp: new Date().toISOString(),
               };
-              console.log("Creating history entry:", JSON.stringify(historyData, null, 2));
-              
-              console.log("Attempting to create history entry in collection:", TASK_HISTORY_ID);
-              const historyEntry = await databases.createDocument(
+              await databases.createDocument(
                 DATABASE_ID,
                 TASK_HISTORY_ID,
                 ID.unique(),
                 historyData
               );
-              console.log("History entry created successfully with ID:", historyEntry.$id);
             }
-          } catch (historyError) {
+          } catch (historyError: any) {
             console.error("Failed to create task history entries:", historyError);
             // Don't fail the task update if history fails
           }
-        } else {
-          console.log("No changes detected, skipping history creation");
         }
 
         return c.json({ data: task });

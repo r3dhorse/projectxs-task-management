@@ -73,10 +73,10 @@ export const EditTaskForm = ({
       ...values,
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
       assigneeId: values.assigneeId || "", // Ensure empty string instead of undefined
+      attachmentId: initialValues.attachmentId || "", // Preserve existing attachment
       workspaceId
     };
 
-    console.log("Edit form submitting payload:", payload);
 
     mutate(
       {
@@ -174,10 +174,10 @@ export const EditTaskForm = ({
                       <FormMessage />
                       <SelectContent>
                         <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>
-                        <SelectItem value={TaskStatus.TODO}>To do</SelectItem>
+                        <SelectItem value={TaskStatus.TODO}>Todo</SelectItem>
                         <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
+                        <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
                         <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
-                        <SelectItem value={TaskStatus.ACHIEVE}>Achieve</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
