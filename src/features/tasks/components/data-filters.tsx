@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, Sele
 import { FolderIcon, ListChecksIcon, UserIcon } from "lucide-react";
 import { TaskStatus } from "../types";
 import { useTaskFilters } from "../hooks/use-task-filters";
-import { date } from "zod";
 
 interface DataFiltersProps {
   hideProjectFilter?: boolean;
@@ -58,13 +57,13 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all"> All statuses</SelectItem>
+          <SelectItem value="all"> All </SelectItem>
           <SelectSeparator />
           <SelectItem value={TaskStatus.BACKLOG} >Backlog</SelectItem>
           <SelectItem value={TaskStatus.TODO} >To do</SelectItem>
           <SelectItem value={TaskStatus.IN_PROGRESS} >In Progress</SelectItem>
-          <SelectItem value={TaskStatus.IN_REVIEW} >In Review</SelectItem>
           <SelectItem value={TaskStatus.DONE} >Done</SelectItem>
+          <SelectItem value={TaskStatus.ACHIEVE} >Achieve</SelectItem>
         </SelectContent>
       </Select>
 

@@ -1,10 +1,9 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ExternalLinkIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { ExternalLinkIcon, TrashIcon } from "lucide-react";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteTask } from "../api/use-delete-task";
 import { useRouter } from "next/navigation";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
-import { useEditTaskModal } from "../hooks/use-edit-task-modal";
 
 interface TaskActionsProps {
   id: string;
@@ -16,7 +15,6 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
   const workspaceId = useWorkspaceId();
   const router = useRouter();
 
-  const { open } = useEditTaskModal();
   const [ConfirmDialog, confirm] = useConfirm(
     "Delete Task",
     "This action cannot be undone",
@@ -67,13 +65,6 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
           </DropdownMenuItem>
 
 
-          <DropdownMenuItem
-            onClick={() => open(id)}
-            className="font-medium p-[10px]"
-          >
-            <PencilIcon className="size-4 mr-2 stroke-2" />
-            Edit Task
-          </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={onDelete}

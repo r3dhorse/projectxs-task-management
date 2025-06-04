@@ -23,8 +23,8 @@ export const useUpdateTask = () => {
       const response = await client.api.tasks[":taskId"]["$patch"]({ json, param, });
 
       if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || "Failed to update task");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || `Failed to update task (${response.status})`);
       }
       return await response.json();
     },
@@ -33,9 +33,9 @@ export const useUpdateTask = () => {
       toast.error(error.message || "Failed to update task");
     },
 
-    onSuccess: ({ data }) => {
+    onSuccess: () => {
       router.refresh();
-      toast.success("Task update");
+      toast.success("Task updated successfully");
       queryClient.invalidateQueries();
     },
 

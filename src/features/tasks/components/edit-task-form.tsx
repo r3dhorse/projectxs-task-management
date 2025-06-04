@@ -28,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useUpdateTask } from "../api/use-update-task";
 import { DatePicker } from "@/components/date-picker";
@@ -50,7 +49,6 @@ export const EditTaskForm = ({
   initialValues
 }: EditTaskFormProps) => {
   const workspaceId = useWorkspaceId();
-  const router = useRouter();
   const { mutate, isPending } = useUpdateTask();
 
   const trimmedSchema = createTaskSchema.omit({
@@ -70,35 +68,26 @@ export const EditTaskForm = ({
     }
   });
 
-  // 🔍 Debug the initial task values
-  console.log("EditTaskForm: Initial Task Values", initialValues);
-  console.log("EditTaskForm: Workspace ID", workspaceId);
-
   const onSubmit = (values: z.infer<typeof trimmedSchema>) => {
     const payload: z.infer<typeof createTaskSchema> = {
       ...values,
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
+      assigneeId: values.assigneeId || "", // Ensure empty string instead of undefined
       workspaceId
     };
 
-    console.log("Submitting form with values:", values);
-    console.log("Payload to be sent to useUpdateTask:", payload);
-    console.log("Task ID being updated:", initialValues.id);
+    console.log("Edit form submitting payload:", payload);
 
     mutate(
       {
-        param: { taskId: initialValues.id },
+        param: { taskId: initialValues.$id },
         json: payload
       },
       {
         onSuccess: () => {
-          console.log("Task updated successfully.");
           form.reset();
           onCancel?.();
         },
-        onError: (error) => {
-          console.error("Error updating task:", error);
-        }
       }
     );
   };
@@ -240,8 +229,7 @@ export const EditTaskForm = ({
                       <Textarea
                         {...field}
                         placeholder="Enter task description..."
-                        className="resize-none"
-                        rows={3}
+                        className="h-[140px] resize-none overflow-y-auto"
                       />
                     </FormControl>
                     <FormMessage />

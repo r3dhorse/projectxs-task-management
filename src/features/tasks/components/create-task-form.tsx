@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,6 +17,7 @@ import { useCreateTask } from "../api/use-create-task";
 import { DatePicker } from "@/components/date-picker";
 import { TaskStatus } from "../types";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/file-upload";
 
 interface CreateTaskFormProps {
   onCancel?: () => void;
@@ -38,30 +40,32 @@ export const CreateTaskForm = ({
 }: CreateTaskFormProps) => {
   const router = useRouter();
   const { mutate, isPending } = useCreateTask();
+  const [attachmentId, setAttachmentId] = useState<string>("");
 
+  const schemaWithoutWorkspaceId = createTaskSchema.omit({ workspaceId: true }).extend({
+    dueDate: z.date({ required_error: "Due date is required" }),
+  });
 
- const schemaWithoutWorkspaceId = createTaskSchema.omit({ workspaceId: true }).extend({
-  dueDate: z.date({ required_error: "Due date is required" }),
-});
-
-const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
-  resolver: zodResolver(schemaWithoutWorkspaceId),
-});
+  const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
+    resolver: zodResolver(schemaWithoutWorkspaceId),
+  });
 
   const onSubmit = (values: z.infer<typeof schemaWithoutWorkspaceId>) => {
-  const formattedValues = {
-    ...values,
-    dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
-    workspaceId
-  };
+    const formattedValues = {
+      ...values,
+      dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
+      attachmentId: attachmentId || undefined,
+      workspaceId
+    };
 
-  mutate({ json: formattedValues }, {
-    onSuccess: () => {
-      form.reset();
-      onCancel?.();
-    },
-  });
-};
+    mutate({ json: formattedValues }, {
+      onSuccess: () => {
+        form.reset();
+        setAttachmentId("");
+        onCancel?.();
+      },
+    });
+  };
 
   return (
     <Card className="w-full h-full border-none shadow-none">
@@ -222,6 +226,18 @@ const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
                 )}
               />
 
+              {/* Attachment */}
+              <div>
+                <FileUpload
+                  onFileUploaded={(fileId) => {
+                    setAttachmentId(fileId);
+                  }}
+                  onFileRemoved={() => {
+                    setAttachmentId("");
+                  }}
+                  disabled={isPending}
+                />
+              </div>
 
               <DottedSeparator />
               <div className="flex items-center justify-between">

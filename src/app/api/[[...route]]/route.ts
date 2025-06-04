@@ -5,6 +5,7 @@ import workspaces from "@/features/workspaces/server/route";
 import members from "@/features/members/server/route";
 import project from "@/features/projects/server/route";
 import tasks from "@/features/tasks/server/route";
+import taskHistory from "@/features/tasks/server/history-route";
 
 const app = new Hono().basePath("/api");
 
@@ -14,10 +15,11 @@ const routes = app
   .route("/members", members)
   .route("/projects", project)
   .route("/tasks", tasks)
+  .route("/task-history", taskHistory)
 
-export const GET = handle(app);
-export const POST = handle(app);
-export const PATCH = handle(app);
-export const DELETE = handle(app);
+export const GET = handle(routes);
+export const POST = handle(routes);
+export const PATCH = handle(routes);
+export const DELETE = handle(routes);
 
 export type Apptype = typeof routes;
