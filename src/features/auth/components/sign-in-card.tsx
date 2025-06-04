@@ -1,13 +1,12 @@
 "use client";
 
 import { z } from "zod";
-import { FcGoogle } from "react-icons/fc";
 import { DottedSeparator } from "@/components/dotted-separator";
 import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { loginSchema } from "../schemas";
 import { useLogin } from "../api/use-login";
@@ -38,7 +37,6 @@ export const SignInCard = () => {
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
     mutate({ json: values });
-
   };
 
   return (
@@ -92,7 +90,13 @@ export const SignInCard = () => {
               )}
             />
 
-            <Button disabled={isPending} type="submit" size="lg" variant="primary" className="w-full">
+            <Button
+              disabled={isPending}
+              type="submit"
+              size="lg"
+              variant="primary"
+              className="w-full"
+            >
               Log in
             </Button>
           </form>
@@ -102,13 +106,6 @@ export const SignInCard = () => {
       <div className="px-7">
         <DottedSeparator />
       </div>
-
-      <CardContent className="p-7 flex flex-col gap-y-4">
-        <Button disabled={isPending} size="lg" className="w-full items-center text-base" variant="outline">
-          <FcGoogle className="size-6 mr-2" />
-          Login with Google
-        </Button>
-      </CardContent>
 
       <CardContent className="p-7 text-center">
         <p className="text-sm text-muted-foreground">
