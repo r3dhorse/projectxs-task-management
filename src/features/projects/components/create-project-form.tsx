@@ -44,7 +44,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
       {
         onSuccess: () => {
           form.reset();
-          router.push(`/workspaces/${workspaceId}`);
+          onCancel?.();
         },
       }
     );

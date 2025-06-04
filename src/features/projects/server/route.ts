@@ -16,35 +16,37 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("form", createProjectSchema),
     async (c) => {
-      const databases = c.get("databases");
-      const user = c.get("user");
-      const { name, workspaceId } = c.req.valid("form")
+      try {
+        const databases = c.get("databases");
+        const user = c.get("user");
+        const { name, workspaceId } = c.req.valid("form")
 
-      const member = await getMember({
-        databases,
-        workspaceId,
-        userId: user.$id
-      });
-
-      if (!member) {
-        return c.json({ error: "Unauthorized" })
-      }
-
-
-      const project = await databases.createDocument(
-        DATABASE_ID,
-        PROJECTS_ID,
-        ID.unique(),
-        {
-          name,
+        const member = await getMember({
+          databases,
           workspaceId,
-        },
-      );
+          userId: user.$id
+        });
 
-      return c.json({ data: project });
-      
+        if (!member) {
+          return c.json({ error: "Unauthorized" }, 401)
+        }
+
+        const project = await databases.createDocument(
+          DATABASE_ID,
+          PROJECTS_ID,
+          ID.unique(),
+          {
+            name,
+            workspaceId,
+          },
+        );
+
+        return c.json({ data: project });
+      } catch (error) {
+        console.error("Project creation error:", error);
+        return c.json({ error: "Failed to create project" }, 500);
+      }
     }
-    
   )
 
   .get(

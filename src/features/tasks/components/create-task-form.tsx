@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useCreateTask } from "../api/use-create-task";
 import { DatePicker } from "@/components/date-picker";
 import { TaskStatus } from "../types";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CreateTaskFormProps {
   onCancel?: () => void;
@@ -39,14 +40,22 @@ export const CreateTaskForm = ({
   const { mutate, isPending } = useCreateTask();
 
 
- const schemaWithoutWorkspaceId = createTaskSchema.omit({ workspaceId: true });
+ const schemaWithoutWorkspaceId = createTaskSchema.omit({ workspaceId: true }).extend({
+  dueDate: z.date({ required_error: "Due date is required" }),
+});
 
 const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
   resolver: zodResolver(schemaWithoutWorkspaceId),
 });
 
   const onSubmit = (values: z.infer<typeof schemaWithoutWorkspaceId>) => {
-  mutate({ json: { ...values, workspaceId } }, {
+  const formattedValues = {
+    ...values,
+    dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
+    workspaceId
+  };
+
+  mutate({ json: formattedValues }, {
     onSuccess: () => {
       form.reset();
       onCancel?.();
@@ -117,12 +126,7 @@ const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
                       <SelectContent>
                         {membertOptions.map((member) => (
                           <SelectItem key={member.id} value={String(member.id)}>
-                            <div className="flex items-center gap-x-2">
-                              <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center text-sm font-medium text-white">
-                                {member.name.charAt(0).toUpperCase()}
-                              </div>
-                              <span>{member.name}</span>
-                            </div>
+                            {member.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -153,13 +157,13 @@ const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
                           To do
                         </SelectItem>
                         <SelectItem value={TaskStatus.IN_PROGRESS}>
-                          In Process
-                        </SelectItem>
-                        <SelectItem value={TaskStatus.IN_REVIEW}>
-                          In Review
+                          In Progress
                         </SelectItem>
                         <SelectItem value={TaskStatus.DONE}>
                           Done
+                        </SelectItem>
+                        <SelectItem value={TaskStatus.ACHIEVE}>
+                          Achieve
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -194,6 +198,26 @@ const form = useForm<z.infer<typeof schemaWithoutWorkspaceId>>({
                         ))}
                       </SelectContent>
                     </Select>
+                  </FormItem>
+                )}
+              />
+
+              {/* Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Enter task description..."
+                        className="resize-none"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

@@ -58,7 +58,7 @@ export const columns: ColumnDef<Task>[] = [
   },
 
   {
-    accessorKey: "assignee",
+    accessorKey: "assignees",
     header: ({ column }) => {
       return (
         <Button
@@ -74,11 +74,19 @@ export const columns: ColumnDef<Task>[] = [
     },
 
     cell: ({ row }) => {
-      const assignee = row.original.assignee;
+      const assignees = row.original.assignees || [];
 
       return (
-        <div className="flex items-center gap-x-2 text-sm font-medium">
-          <p className="line-clamp-1">{assignee.name}</p>
+        <div className="flex items-center gap-x-2">
+          {assignees.length > 0 ? (
+            assignees.map((assignee: { $id: string; name: string }) => (
+              <span key={assignee.$id} className="text-sm font-medium">
+                {assignee.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-xs text-muted-foreground">No assignee</span>
+          )}
         </div>
       )
     }

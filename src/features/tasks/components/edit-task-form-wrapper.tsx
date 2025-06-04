@@ -32,9 +32,9 @@ export const EditTaskFormWrapper = ({
     name: project.name,
   }));
 
-  const memberOptions = members?.documents.map((project) => ({
-    id: project.$id,
-    name: project.name,
+  const memberOptions = members?.documents.map((member) => ({
+    id: member.$id,
+    name: member.name,
   }));
 
   const isLoading = isLoadingProjects || isLoadingMembers || isLoadingTask;

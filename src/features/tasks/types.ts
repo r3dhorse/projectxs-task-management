@@ -4,8 +4,8 @@ export enum TaskStatus {
   BACKLOG = "BACKLOG",
   TODO = "TODO",
   IN_PROGRESS = "IN_PROGRESS",
-  IN_REVIEW = "IN_REVIEW",
-  DONE = "DONE"
+  DONE = "DONE",
+  ACHIEVE = "ACHIEVE"
 };
 
 export type Task = Models.Document & {
@@ -16,4 +16,5 @@ export type Task = Models.Document & {
   projectId: string;
   position: number;
   dueDate: string;
+  description?: string;
 }

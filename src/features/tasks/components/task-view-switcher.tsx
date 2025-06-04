@@ -12,6 +12,8 @@ import { DataFilters } from "./data-filters";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
+import { KanbanBoard } from "./kanban-board";
+import { useCallback } from "react";
 
 
 export const TaskViewSwitcher = () => {
@@ -38,6 +40,10 @@ export const TaskViewSwitcher = () => {
     status,
     dueDate,
   });
+
+  const onKanbanChange = useCallback((_tasks: Task[]) => {
+    // This will be handled by React Query's cache update
+  }, []);
 
 
   return (
@@ -104,7 +110,10 @@ export const TaskViewSwitcher = () => {
 
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
-              {JSON.stringify(tasks)}
+              <KanbanBoard
+                data={tasks?.documents ?? []}
+                onChange={onKanbanChange}
+              />
             </TabsContent>
             <TabsContent value="calendar" className="mt-0">
               {JSON.stringify(tasks)}

@@ -24,9 +24,9 @@ export const CreateTaskFormWrapper = ({
     name: project.name,
   }));
 
-  const memberOptions = members?.documents.map((project) => ({
-    id: project.$id,
-    name: project.name,
+  const memberOptions = members?.documents.map((member) => ({
+    id: member.$id,
+    name: member.name,
   }));
 
   const isLoading = isLoadingProjects || isLoadingMembers;
@@ -46,7 +46,7 @@ export const CreateTaskFormWrapper = ({
       onCancel={onCancel}
       projectOptions={projectOptions ?? []}
       membertOptions={memberOptions ?? []}
-      workspaceId={workspaceId ?? []}
+      workspaceId={workspaceId}
     />
   );
 };

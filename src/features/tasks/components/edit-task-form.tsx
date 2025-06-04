@@ -34,6 +34,7 @@ import { useUpdateTask } from "../api/use-update-task";
 import { DatePicker } from "@/components/date-picker";
 import { TaskStatus, Task } from "../types";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { Textarea } from "@/components/ui/textarea";
 
 interface EditTaskFormProps {
   onCancel?: () => void;
@@ -53,14 +54,16 @@ export const EditTaskForm = ({
   const { mutate, isPending } = useUpdateTask();
 
   const trimmedSchema = createTaskSchema.omit({
-    workspaceId: true,
-    description: true
+    workspaceId: true
+  }).extend({
+    dueDate: z.date({ required_error: "Due date is required" }),
   });
 
   const form = useForm<z.infer<typeof trimmedSchema>>({
     resolver: zodResolver(trimmedSchema),
     defaultValues: {
       ...initialValues,
+      assigneeId: initialValues.assigneeId || "",
       dueDate: initialValues.dueDate
         ? new Date(initialValues.dueDate)
         : undefined
@@ -74,8 +77,8 @@ export const EditTaskForm = ({
   const onSubmit = (values: z.infer<typeof trimmedSchema>) => {
     const payload: z.infer<typeof createTaskSchema> = {
       ...values,
-      workspaceId,
-      description: initialValues.description ?? ""
+      dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
+      workspaceId
     };
 
     console.log("Submitting form with values:", values);
@@ -157,12 +160,7 @@ export const EditTaskForm = ({
                       <SelectContent>
                         {membertOptions.map((member) => (
                           <SelectItem key={member.id} value={String(member.id)}>
-                            <div className="flex items-center gap-x-2">
-                              <div className="w-6 h-6 rounded-full bg-green-700 flex items-center justify-center text-sm font-medium text-white">
-                                {member.name.charAt(0).toUpperCase()}
-                              </div>
-                              <span>{member.name}</span>
-                            </div>
+                            {member.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -189,8 +187,8 @@ export const EditTaskForm = ({
                         <SelectItem value={TaskStatus.BACKLOG}>Backlog</SelectItem>
                         <SelectItem value={TaskStatus.TODO}>To do</SelectItem>
                         <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
-                        <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
                         <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
+                        <SelectItem value={TaskStatus.ACHIEVE}>Achieve</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -227,6 +225,26 @@ export const EditTaskForm = ({
                         ))}
                       </SelectContent>
                     </Select>
+                  </FormItem>
+                )}
+              />
+
+              {/* Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Enter task description..."
+                        className="resize-none"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
