@@ -23,7 +23,14 @@ export const Sidebar = () => {
     >
       <div>
         <Link href="/" className="block mb-6">
-          <Image src="/logo.svg" alt="App Logo" width={164} height={48} />
+          <Image 
+            src="/logo.svg" 
+            alt="Task Management - Go to homepage" 
+            width={200} 
+            height={60} 
+            className="h-15 w-auto"
+            priority
+          />
         </Link>
 
         <DottedSeparator className="my-4" />
