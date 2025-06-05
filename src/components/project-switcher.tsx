@@ -9,7 +9,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRouter } from "next/navigation";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
@@ -41,7 +41,9 @@ export const ProjectSwitcher = () => {
       </div>
 
       {isLoading ? (
-        <Skeleton className="w-full h-9 rounded bg-neutral-300" />
+        <div className="w-full h-9 rounded bg-neutral-100 flex items-center justify-center">
+          <LoadingSpinner variant="minimal" size="sm" />
+        </div>
       ) : isError ? (
         <p className="text-sm text-red-500">Failed to load projects.</p>
       ) : (

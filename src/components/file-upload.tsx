@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileTextIcon, XIcon, LoaderIcon } from "lucide-react";
+import { FileTextIcon, XIcon } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
 import { ID } from "node-appwrite";
 
@@ -173,7 +174,7 @@ export const FileUpload = ({
           />
           {isUploading && (
             <div className="flex items-center gap-x-2 text-sm text-gray-600">
-              <LoaderIcon className="size-4 animate-spin" />
+              <LoadingSpinner size="sm" />
               Uploading file...
             </div>
           )}

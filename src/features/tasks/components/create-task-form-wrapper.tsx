@@ -4,7 +4,7 @@ import { useGetMembers } from "@/features/members/api/use-get-members";
 import { useGetProjects } from "@/features/projects/api/use-get-project";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { CreateTaskForm } from "./create-task-form";
 
 interface CreateTaskFormWrapperProps {
@@ -35,7 +35,7 @@ export const CreateTaskFormWrapper = ({
     return (
       <Card className="w-f h-[714px] border-none shadow-none">
         <CardContent className="flex items-center justify-center h-full">
-          <Loader className="size-5 animate-spin text-muted-foreground" />
+          <LoadingSpinner variant="minimal" size="md" />
         </CardContent>
       </Card>
     )

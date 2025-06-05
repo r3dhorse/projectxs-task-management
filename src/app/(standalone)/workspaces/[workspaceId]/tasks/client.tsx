@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/date-picker";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
 import { useCurrent } from "@/features/auth/api/use-current";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
@@ -67,14 +68,7 @@ export const MyTasksClient = () => {
   const isLoading = isLoadingMembers || isLoadingTasks;
 
   if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-slate-600" />
-          <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border-2 border-slate-400 opacity-20" />
-        </div>
-      </div>
-    );
+    return <LoadingSpinner variant="fullscreen" />;
   }
 
   if (!currentMember) {

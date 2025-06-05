@@ -9,7 +9,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRouter } from "next/navigation";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useCreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal";
@@ -31,7 +31,9 @@ export const WorkspaceSwitcher = () => {
       </div>
 
       {isLoading ? (
-        <Skeleton className="w-full h-9 rounded bg-neutral-300" />
+        <div className="w-full h-9 rounded bg-neutral-100 flex items-center justify-center">
+          <LoadingSpinner variant="minimal" size="sm" />
+        </div>
       ) : isError ? (
         <p className="text-sm text-red-500">Failed to load workspaces.</p>
       ) : (

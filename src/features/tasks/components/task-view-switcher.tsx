@@ -3,7 +3,8 @@
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useCreateTaskModal } from "../hooks/use-create-task-modal";
 import { useGetTasks } from "../api/use-get-tasks";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
@@ -95,8 +96,8 @@ export const TaskViewSwitcher = () => {
         </div>
         <DottedSeparator />
         {isLoadingTasks ? (
-          <div className="w-full border rounde-lg h-[200px] flex flex-col items-center justify-center">
-            <Loader className="size-5 animate-spin text-muted-foreground" />
+          <div className="w-full border rounded-lg h-[200px]">
+            <LoadingSpinner variant="minimal" size="md" className="h-[200px]" />
           </div>
         ) : (
           <>
