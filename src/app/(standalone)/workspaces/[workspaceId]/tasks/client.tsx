@@ -19,6 +19,28 @@ interface MemberDocument extends Models.Document {
   role: string;
 }
 
+interface TaskDocument extends Models.Document {
+  name: string;
+  status: TaskStatus;
+  workspaceId: string;
+  assigneeId: string;
+  projectId: string;
+  position: number;
+  dueDate: string;
+  description?: string;
+  attachmentId?: string;
+  project?: {
+    $id: string;
+    name: string;
+    workspaceId: string;
+  };
+  assignees?: Array<{
+    $id: string;
+    name: string;
+    email: string;
+  }>;
+}
+
 
 import { 
   Calendar, 
@@ -152,7 +174,7 @@ export const MyTasksClient = () => {
   const tasks = allTasks.documents || [];
 
   // Filter tasks by date range
-  const filteredTasks = tasks.filter((task: any) => {
+  const filteredTasks = tasks.filter((task) => {
     if (!dateFrom || !dateTo) return true;
     const taskDate = new Date(task.$createdAt);
     return isAfter(taskDate, dateFrom) && isBefore(taskDate, dateTo);
@@ -160,44 +182,44 @@ export const MyTasksClient = () => {
 
   // Calculate basic metrics
   const totalTasks = filteredTasks.length;
-  const completedTasks = filteredTasks.filter((task: any) => task.status === TaskStatus.DONE).length;
-  const inProgressTasks = filteredTasks.filter((task: any) => task.status === TaskStatus.IN_PROGRESS).length;
-  const todoTasks = filteredTasks.filter((task: any) => task.status === TaskStatus.TODO).length;
+  const completedTasks = filteredTasks.filter((task) => (task as unknown as TaskDocument).status === TaskStatus.DONE).length;
+  const inProgressTasks = filteredTasks.filter((task) => (task as unknown as TaskDocument).status === TaskStatus.IN_PROGRESS).length;
+  const todoTasks = filteredTasks.filter((task) => (task as unknown as TaskDocument).status === TaskStatus.TODO).length;
 
   // Calculate overdue tasks
-  const overdueTasks = filteredTasks.filter((task: any) => {
-    if (!task.dueDate) return false;
-    const dueDate = new Date(task.dueDate);
+  const overdueTasks = filteredTasks.filter((task) => {
+    if (!(task as unknown as TaskDocument).dueDate) return false;
+    const dueDate = new Date((task as unknown as TaskDocument).dueDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return dueDate < today && task.status !== TaskStatus.DONE;
+    return dueDate < today && (task as unknown as TaskDocument).status !== TaskStatus.DONE;
   }).length;
 
   // Calculate due this week
   const thisWeekStart = startOfWeek(new Date());
   const thisWeekEnd = endOfWeek(new Date());
-  const dueThisWeek = filteredTasks.filter((task: any) => {
-    if (!task.dueDate) return false;
-    const dueDate = new Date(task.dueDate);
-    return isAfter(dueDate, thisWeekStart) && isBefore(dueDate, thisWeekEnd) && task.status !== TaskStatus.DONE;
+  const dueThisWeek = filteredTasks.filter((task) => {
+    if (!(task as unknown as TaskDocument).dueDate) return false;
+    const dueDate = new Date((task as unknown as TaskDocument).dueDate);
+    return isAfter(dueDate, thisWeekStart) && isBefore(dueDate, thisWeekEnd) && (task as unknown as TaskDocument).status !== TaskStatus.DONE;
   }).length;
 
   // Calculate completion rate and productivity metrics
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
   // Weekly productivity (tasks completed this week)
-  const thisWeekCompleted = filteredTasks.filter((task: any) => {
-    if (task.status !== TaskStatus.DONE) return false;
-    const completedDate = new Date(task.$updatedAt);
+  const thisWeekCompleted = filteredTasks.filter((task) => {
+    if ((task as unknown as TaskDocument).status !== TaskStatus.DONE) return false;
+    const completedDate = new Date((task as unknown as TaskDocument).$updatedAt);
     return isAfter(completedDate, thisWeekStart) && isBefore(completedDate, thisWeekEnd);
   }).length;
 
   // Previous week completed for comparison
   const lastWeekStart = subDays(thisWeekStart, 7);
   const lastWeekEnd = subDays(thisWeekEnd, 7);
-  const lastWeekCompleted = filteredTasks.filter((task: any) => {
-    if (task.status !== TaskStatus.DONE) return false;
-    const completedDate = new Date(task.$updatedAt);
+  const lastWeekCompleted = filteredTasks.filter((task) => {
+    if ((task as unknown as TaskDocument).status !== TaskStatus.DONE) return false;
+    const completedDate = new Date((task as unknown as TaskDocument).$updatedAt);
     return isAfter(completedDate, lastWeekStart) && isBefore(completedDate, lastWeekEnd);
   }).length;
 
@@ -207,23 +229,23 @@ export const MyTasksClient = () => {
 
   // Task status breakdown
   const taskStatusCount: TaskStatusCount = {
-    [TaskStatus.BACKLOG]: filteredTasks.filter((task: any) => task.status === TaskStatus.BACKLOG).length,
+    [TaskStatus.BACKLOG]: filteredTasks.filter((task) => (task as unknown as TaskDocument).status === TaskStatus.BACKLOG).length,
     [TaskStatus.TODO]: todoTasks,
     [TaskStatus.IN_PROGRESS]: inProgressTasks,
-    [TaskStatus.IN_REVIEW]: filteredTasks.filter((task: any) => task.status === TaskStatus.IN_REVIEW).length,
+    [TaskStatus.IN_REVIEW]: filteredTasks.filter((task) => (task as unknown as TaskDocument).status === TaskStatus.IN_REVIEW).length,
     [TaskStatus.DONE]: completedTasks
   };
 
   // Calculate average completion time
-  const completedTasksWithTime = filteredTasks.filter((task: any) => 
-    task.status === TaskStatus.DONE && task.$createdAt && task.$updatedAt
+  const completedTasksWithTime = filteredTasks.filter((task) => 
+    (task as unknown as TaskDocument).status === TaskStatus.DONE && (task as unknown as TaskDocument).$createdAt && (task as unknown as TaskDocument).$updatedAt
   );
   
   const avgCompletionTime = completedTasksWithTime.length > 0
     ? Math.round(
-        completedTasksWithTime.reduce((acc, task: any) => {
-          const created = new Date(task.$createdAt);
-          const updated = new Date(task.$updatedAt);
+        completedTasksWithTime.reduce((acc, task) => {
+          const created = new Date((task as unknown as TaskDocument).$createdAt);
+          const updated = new Date((task as unknown as TaskDocument).$updatedAt);
           return acc + differenceInDays(updated, created);
         }, 0) / completedTasksWithTime.length
       )
@@ -537,23 +559,23 @@ export const MyTasksClient = () => {
               <CardContent>
                 <div className="space-y-3">
                   {filteredTasks.length > 0 ? (
-                    filteredTasks.slice(0, 3).map((task: any, index) => {
-                      const config = statusConfig[task.status as TaskStatus] || statusConfig[TaskStatus.TODO];
-                      const daysUntilDue = task.dueDate ? differenceInDays(new Date(task.dueDate), new Date()) : null;
+                    filteredTasks.slice(0, 3).map((task, index) => {
+                      const config = statusConfig[(task as unknown as TaskDocument).status as TaskStatus] || statusConfig[TaskStatus.TODO];
+                      const daysUntilDue = (task as unknown as TaskDocument).dueDate ? differenceInDays(new Date((task as unknown as TaskDocument).dueDate), new Date()) : null;
                       
                       return (
                         <div 
-                          key={task.$id} 
+                          key={(task as unknown as TaskDocument).$id} 
                           className="group p-4 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 hover:from-slate-100 hover:to-slate-200/50 transition-all duration-300 cursor-pointer"
                           style={{ animationDelay: `${index * 50}ms` }}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-sm text-slate-800 truncate group-hover:text-slate-900">
-                                {task.name}
+                                {(task as unknown as TaskDocument).name}
                               </p>
                               <div className="flex items-center gap-3 mt-2">
-                                {task.dueDate && (
+                                {(task as unknown as TaskDocument).dueDate && (
                                   <p className={`text-xs ${daysUntilDue !== null && daysUntilDue < 0 ? 'text-red-600' : 'text-slate-500'}`}>
                                     {daysUntilDue !== null && daysUntilDue < 0 
                                       ? `${Math.abs(daysUntilDue)} days overdue`
@@ -565,17 +587,17 @@ export const MyTasksClient = () => {
                                     }
                                   </p>
                                 )}
-                                {task.project && (
+                                {(task as unknown as TaskDocument).project && (
                                   <p className="text-xs text-slate-500 truncate max-w-[150px]">
-                                    {task.project.name}
+                                    {(task as unknown as TaskDocument).project?.name}
                                   </p>
                                 )}
                               </div>
                             </div>
                             <div className={`px-3 py-1.5 rounded-full text-xs font-medium ${config.lightBg} ${config.textColor} group-hover:scale-105 transition-transform duration-200`}>
-                              {task.status === TaskStatus.IN_PROGRESS ? 'Progress' :
-                               task.status === TaskStatus.IN_REVIEW ? 'Review' :
-                               task.status && task.status.charAt(0) ? task.status.charAt(0) + task.status.slice(1).toLowerCase() : 'Unknown'}
+                              {(task as unknown as TaskDocument).status === TaskStatus.IN_PROGRESS ? 'Progress' :
+                               (task as unknown as TaskDocument).status === TaskStatus.IN_REVIEW ? 'Review' :
+                               (task as unknown as TaskDocument).status && (task as unknown as TaskDocument).status.charAt(0) ? (task as unknown as TaskDocument).status.charAt(0) + (task as unknown as TaskDocument).status.slice(1).toLowerCase() : 'Unknown'}
                             </div>
                           </div>
                         </div>

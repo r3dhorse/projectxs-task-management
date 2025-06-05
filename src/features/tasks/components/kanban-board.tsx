@@ -112,7 +112,7 @@ const DoneColumn = ({ board, tasks, isExpanded, onToggle, taskCount }: DoneColum
       )}
       
       {!isExpanded && (
-        <div className="flex items-center justify-center min-h-[60px] rounded-md border-2 border-dashed border-neutral-200 bg-neutral-50">
+        <div className="flex items-center justify-center min-h-[60px] rounded-lg border-2 border-dashed border-neutral-300/80 bg-neutral-50/80 backdrop-blur-sm">
           <p className="text-xs text-neutral-500">
             {taskCount === 0 ? 'No completed tasks' : `${taskCount} completed task${taskCount === 1 ? '' : 's'}`}
           </p>
@@ -267,7 +267,7 @@ export const KanbanBoard = ({ data, onChange }: KanbanBoardProps) => {
           isUpdating ? 'blur-sm opacity-75' : ''
         }`}>
           {boards.map((board) => (
-            <div key={board.key} className="flex-1 mx-2 bg-muted p-1.5 rounded-md min-w-[200px]">
+            <div key={board.key} className="flex-1 mx-2 bg-muted/70 border border-neutral-200/60 p-1.5 rounded-lg min-w-[200px] shadow-sm backdrop-blur-sm">
               {board.key === TaskStatus.DONE ? (
                 <DoneColumn
                   board={board}

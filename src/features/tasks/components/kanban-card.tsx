@@ -46,8 +46,8 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
           {...provided.dragHandleProps}
           ref={provided.innerRef}
           onDoubleClick={handleDoubleClick}
-          className={`group bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-md hover:border-neutral-300 ${
-            snapshot.isDragging ? "opacity-75 rotate-1 shadow-xl" : ""
+          className={`group bg-white rounded-lg shadow-sm border-2 border-neutral-200/80 overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-lg hover:border-blue-300/60 hover:bg-blue-50/30 ${
+            snapshot.isDragging ? "opacity-75 rotate-1 shadow-xl border-blue-400" : ""
           }`}
         >
           {/* Card Header */}
@@ -106,7 +106,7 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
           </div>
 
           {/* Subtle hover indicator */}
-          <div className="h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-x-0 group-hover:scale-x-100" />
         </div>
       )}
     </Draggable>
