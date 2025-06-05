@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowUpDown, MoreVertical } from "lucide-react"
+import { ArrowUpDown, Trash2 } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { PopulatedTask } from "../types"
 import { Button } from "@/components/ui/button"
@@ -147,9 +147,9 @@ export const columns: ColumnDef<PopulatedTask>[] = [
       const projectId = row.original.projectId;
 
       return (
-        <TaskActions id={id} projectId={projectId} >
+        <TaskActions id={id} projectId={projectId} deleteOnly={true} >
           <Button variant="ghost" className="size-8 p-0">
-            <MoreVertical className="size-4" />
+            <Trash2 className="size-4" />
           </Button>
         </TaskActions>
       )

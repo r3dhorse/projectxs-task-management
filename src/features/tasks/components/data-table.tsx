@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
 import {
   ColumnDef,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
+import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 
 interface DataTableProps<TData, TValue> {
@@ -35,6 +37,8 @@ export function DataTable<TData, TValue>({
   columns,
   data
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
+  const workspaceId = useWorkspaceId();
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -54,6 +58,13 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
   });
+
+  const handleRowDoubleClick = (row: any) => {
+    const taskId = row.original.$id;
+    if (taskId && workspaceId) {
+      router.push(`/workspaces/${workspaceId}/tasks/${taskId}`);
+    }
+  };
 
   return (
     <div>
@@ -98,7 +109,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="hover:bg-blue-50/50 transition-colors duration-200 border-b border-neutral-200/60"
+                  className="hover:bg-blue-50/50 transition-colors duration-200 border-b border-neutral-200/60 cursor-pointer"
+                  onDoubleClick={() => handleRowDoubleClick(row)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

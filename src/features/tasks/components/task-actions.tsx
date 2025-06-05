@@ -9,9 +9,10 @@ interface TaskActionsProps {
   id: string;
   projectId: string;
   children: React.ReactNode;
+  deleteOnly?: boolean;
 };
 
-export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
+export const TaskActions = ({ id, projectId, children, deleteOnly = false }: TaskActionsProps) => {
   const workspaceId = useWorkspaceId();
   const router = useRouter();
 
@@ -47,24 +48,25 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
           {children}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-28">
+          {!deleteOnly && (
+            <>
+              <DropdownMenuItem
+                onClick={onOpenTask}
+                className="font-medium p-[10px]"
+              >
+                <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
+                Task Details
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onClick={onOpenTask}
-            className="font-medium p-[10px]"
-          >
-            <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
-            Task Details
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            onClick={onOpenProject}
-            className="font-medium p-[10px]"
-          >
-            <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
-            Open Project
-          </DropdownMenuItem>
-
-
+              <DropdownMenuItem
+                onClick={onOpenProject}
+                className="font-medium p-[10px]"
+              >
+                <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
+                Open Project
+              </DropdownMenuItem>
+            </>
+          )}
 
           <DropdownMenuItem
             onClick={onDelete}
