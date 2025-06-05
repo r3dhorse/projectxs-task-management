@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCreateWorkspace } from "../api/use-create-workspace";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: "",
+      description: "",
     },
   });
 
@@ -73,8 +75,25 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                     </FormControl>
                   </FormItem>
                 )}
+              />
 
-
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Description (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Enter workspace description"
+                        rows={3}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
               <DottedSeparator />
               <div className="flex items-center justify-between">

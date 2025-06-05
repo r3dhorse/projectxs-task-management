@@ -4,15 +4,16 @@ import { useState } from "react";
 import { useGetMembers } from "@/features/members/api/use-get-members";
 import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { useGetWorkspace } from "@/features/workspaces/api/use-get-workspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/date-picker";
-import { CalendarIcon, UsersIcon, CheckCircle2Icon, Clock3Icon, ListTodoIcon, BarChart3Icon } from "lucide-react";
+import { CalendarIcon, UsersIcon, CheckCircle2Icon, Clock3Icon, ListTodoIcon, BarChart3Icon, TrendingUpIcon, StarIcon, ZapIcon, Target, Activity, Award } from "lucide-react";
 import { TaskStatus } from "@/features/tasks/types";
 import { Models } from "node-appwrite";
 import { subDays, isAfter, isBefore } from "date-fns";
 import { DottedSeparator } from "@/components/dotted-separator";
-import { UserButton } from "@/features/auth/components/user-button";
 
 interface TaskStatusCount {
   [TaskStatus.BACKLOG]: number;
@@ -50,6 +51,7 @@ const WorkspaceIdPage = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>(subDays(new Date(), 30));
   const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
 
+  const { data: workspace, isLoading: isLoadingWorkspace } = useGetWorkspace({ workspaceId });
   const { data: members, isLoading: isLoadingMembers } = useGetMembers({ workspaceId });
   const { data: tasks, isLoading: isLoadingTasks } = useGetTasks({
     workspaceId,
@@ -60,7 +62,7 @@ const WorkspaceIdPage = () => {
     dueDate: null,
   });
 
-  const isLoading = isLoadingMembers || isLoadingTasks;
+  const isLoading = isLoadingWorkspace || isLoadingMembers || isLoadingTasks;
 
   // Filter tasks by date range
   // @ts-expect-error - Tasks are enriched with project and assignees from the API
@@ -109,139 +111,171 @@ const WorkspaceIdPage = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <p className="text-sm text-muted-foreground">Loading workspace...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col space-y-6 py-10">
+    <div className="flex flex-col space-y-8 py-8">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">Workspace Dashboard</h1>
-            <p className="text-gray-600">Overview of your workspace metrics and performance</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                <BarChart3Icon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  {workspace?.name || "Workspace Dashboard"}
+                </h1>
+                <p className="text-muted-foreground">
+                  {workspace?.description || "Overview of your workspace metrics and performance"}
+                </p>
+              </div>
+            </div>
           </div>
           
           {/* Date Range Filter */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="size-4 text-gray-500" />
-              <DatePicker
-                value={dateFrom}
-                onChange={setDateFrom}
-                placeholder="From date"
-                className="w-48 text-center"
-              />
-              <span className="text-gray-500 text-sm">to</span>
-              <DatePicker
-                value={dateTo}
-                onChange={setDateTo}
-                placeholder="To date"
-                className="w-48 text-center"
-              />
+          <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="size-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">Date Range:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <DatePicker
+                  value={dateFrom}
+                  onChange={setDateFrom}
+                  placeholder="From date"
+                  className="w-40"
+                />
+                <span className="text-muted-foreground text-sm">to</span>
+                <DatePicker
+                  value={dateTo}
+                  onChange={setDateTo}
+                  placeholder="To date"
+                  className="w-40"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const today = new Date();
+                    setDateTo(today);
+                    setDateFrom(subDays(today, 7));
+                  }}
+                  className="bg-white hover:bg-blue-50"
+                >
+                  7 days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const today = new Date();
+                    setDateTo(today);
+                    setDateFrom(subDays(today, 15));
+                  }}
+                  className="bg-white hover:bg-blue-50"
+                >
+                  15 days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const today = new Date();
+                    setDateTo(today);
+                    setDateFrom(subDays(today, 30));
+                  }}
+                  className="bg-white hover:bg-blue-50"
+                >
+                  30 days
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const today = new Date();
-                  setDateTo(today);
-                  setDateFrom(subDays(today, 7));
-                }}
-                className="w-fit"
-              >
-                7 days
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const today = new Date();
-                  setDateTo(today);
-                  setDateFrom(subDays(today, 15));
-                }}
-                className="w-fit"
-              >
-                15 days
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const today = new Date();
-                  setDateTo(today);
-                  setDateFrom(subDays(today, 30));
-                }}
-                className="w-fit"
-              >
-                30 days
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        {/* User Button at top-most right */}
-        <div className="flex-shrink-0">
-          <UserButton />
+          </Card>
         </div>
       </div>
 
       <DottedSeparator />
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-            <UsersIcon className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <div className="absolute inset-0 bg-black/5" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-blue-100">Total Members</CardTitle>
+            <div className="p-2 bg-white/20 rounded-full">
+              <UsersIcon className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalMembers}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold">{totalMembers}</div>
+            <p className="text-xs text-blue-100 mt-1">
               Active workspace members
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <ListTodoIcon className="h-4 w-4 text-muted-foreground" />
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+          <div className="absolute inset-0 bg-black/5" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-purple-100">Total Tasks</CardTitle>
+            <div className="p-2 bg-white/20 rounded-full">
+              <ListTodoIcon className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTasks}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold">{totalTasks}</div>
+            <p className="text-xs text-purple-100 mt-1">
               In selected date range
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
-            <CheckCircle2Icon className="h-4 w-4 text-muted-foreground" />
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-500 to-green-600 text-white">
+          <div className="absolute inset-0 bg-black/5" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-green-100">Completed Tasks</CardTitle>
+            <div className="p-2 bg-white/20 rounded-full">
+              <CheckCircle2Icon className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalTasks > 0 ? `${Math.round((completedTasks / totalTasks) * 100)}% completion rate` : 'No tasks yet'}
-            </p>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold">{completedTasks}</div>
+            <div className="flex items-center gap-1 mt-1">
+              <TrendingUpIcon className="h-3 w-3" />
+              <p className="text-xs text-green-100">
+                {totalTasks > 0 ? `${Math.round((completedTasks / totalTasks) * 100)}% completion rate` : 'No tasks yet'}
+              </p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Clock3Icon className="h-4 w-4 text-muted-foreground" />
+        <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+          <div className="absolute inset-0 bg-black/5" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+            <CardTitle className="text-sm font-medium text-orange-100">In Progress</CardTitle>
+            <div className="p-2 bg-white/20 rounded-full">
+              <Clock3Icon className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgressTasks}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently active tasks
-            </p>
+          <CardContent className="relative z-10">
+            <div className="text-3xl font-bold">{inProgressTasks}</div>
+            <div className="flex items-center gap-1 mt-1">
+              <ZapIcon className="h-3 w-3" />
+              <p className="text-xs text-orange-100">
+                Currently active tasks
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -249,49 +283,58 @@ const WorkspaceIdPage = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Task Status Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3Icon className="h-5 w-5" />
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                <BarChart3Icon className="h-5 w-5 text-white" />
+              </div>
               Task Status Distribution
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {Object.entries(taskStatusCount).map(([status, count]) => {
                 const percentage = totalTasks > 0 ? (count / totalTasks) * 100 : 0;
                 return (
-                  <div key={status} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className={`w-3 h-3 rounded-full ${
-                          status === TaskStatus.BACKLOG ? 'bg-gray-500' :
-                          status === TaskStatus.TODO ? 'bg-blue-500' :
-                          status === TaskStatus.IN_PROGRESS ? 'bg-yellow-500' :
-                          status === TaskStatus.IN_REVIEW ? 'bg-purple-500' :
-                          'bg-green-500'
-                        }`}
-                      />
-                      <span className="text-sm font-medium">
-                        {status === TaskStatus.IN_PROGRESS ? 'In Progress' :
-                         status === TaskStatus.IN_REVIEW ? 'In Review' :
-                         status.charAt(0) + status.slice(1).toLowerCase()}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                  <div key={status} className="group hover:bg-gray-50 rounded-lg p-3 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
                         <div 
-                          className={`h-2 rounded-full ${
+                          className={`w-4 h-4 rounded-full shadow-sm ${
                             status === TaskStatus.BACKLOG ? 'bg-gray-500' :
                             status === TaskStatus.TODO ? 'bg-blue-500' :
                             status === TaskStatus.IN_PROGRESS ? 'bg-yellow-500' :
                             status === TaskStatus.IN_REVIEW ? 'bg-purple-500' :
                             'bg-green-500'
                           }`}
-                          style={{ width: `${percentage}%` }}
                         />
+                        <span className="text-sm font-medium text-gray-900">
+                          {status === TaskStatus.IN_PROGRESS ? 'In Progress' :
+                           status === TaskStatus.IN_REVIEW ? 'In Review' :
+                           status.charAt(0) + status.slice(1).toLowerCase()}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          {count}
+                        </Badge>
                       </div>
-                      <span className="text-sm text-gray-600 w-8">{count}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              status === TaskStatus.BACKLOG ? 'bg-gray-500' :
+                              status === TaskStatus.TODO ? 'bg-blue-500' :
+                              status === TaskStatus.IN_PROGRESS ? 'bg-yellow-500' :
+                              status === TaskStatus.IN_REVIEW ? 'bg-purple-500' :
+                              'bg-green-500'
+                            }`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-600 w-10">
+                          {percentage.toFixed(0)}%
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -301,44 +344,92 @@ const WorkspaceIdPage = () => {
         </Card>
 
         {/* Top Performers */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UsersIcon className="h-5 w-5" />
-              Top Performers
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg">
+                <Award className="h-5 w-5 text-white" />
+              </div>
+              <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                🏆 TOP 3 Performers
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {topPerformers.length > 0 ? (
-                topPerformers.map((member, index) => (
-                  <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-medium">
-                        #{index + 1}
+                topPerformers.map((member, index) => {
+                  const medalColors = [
+                    'from-yellow-400 to-yellow-600', // Gold
+                    'from-gray-300 to-gray-500',     // Silver
+                    'from-amber-600 to-amber-800'   // Bronze
+                  ];
+                  const bgColors = [
+                    'from-yellow-50 to-amber-50',
+                    'from-gray-50 to-slate-50',
+                    'from-amber-50 to-orange-50'
+                  ];
+                  
+                  return (
+                    <div key={member.id} className={`relative overflow-hidden rounded-xl bg-gradient-to-r ${bgColors[index]} border border-white/50 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1`}>
+                      <div className="flex items-center justify-between p-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br ${medalColors[index]} text-white shadow-lg`}>
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                              {index === 0 ? <StarIcon className="w-2.5 h-2.5 text-yellow-500" /> :
+                               index === 1 ? <StarIcon className="w-2.5 h-2.5 text-gray-500" /> :
+                               <StarIcon className="w-2.5 h-2.5 text-amber-600" />}
+                            </div>
+                            <span className="text-lg font-bold">#{index + 1}</span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 text-lg">{member.name}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <div className="flex items-center gap-1">
+                                <CheckCircle2Icon className="w-4 h-4 text-green-600" />
+                                <span className="text-sm text-gray-600">{member.tasksCompleted} completed</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Activity className="w-4 h-4 text-blue-600" />
+                                <span className="text-sm text-gray-600">{member.tasksInProgress} active</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Target className="w-4 h-4 text-green-600" />
+                            <span className="text-2xl font-bold text-green-600">
+                              {member.completionRate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {member.totalTasks} total tasks
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-xs text-gray-600">
-                          {member.tasksCompleted} completed, {member.tasksInProgress} in progress
-                        </p>
+                      
+                      {/* Progress bar */}
+                      <div className="px-4 pb-4">
+                        <div className="w-full bg-white/60 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-green-500 to-emerald-600 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${member.completionRate}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-green-600">
-                        {member.completionRate.toFixed(1)}%
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {member.totalTasks} total tasks
-                      </p>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <UsersIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No member performance data available</p>
-                  <p className="text-xs">Assign tasks to members to see performance metrics</p>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                    <Award className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 mb-2">No Performance Data Yet</h3>
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                    Assign tasks to team members to see performance metrics and discover your top performers!
+                  </p>
                 </div>
               )}
             </div>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -137,6 +138,26 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                         <Input
                           {...field}
                           placeholder="Enter workspace name"
+                          className="focus-visible:ring-2 focus-visible:ring-primary"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-muted-foreground">
+                        Description (Optional)
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Enter workspace description"
+                          rows={3}
                           className="focus-visible:ring-2 focus-visible:ring-primary"
                         />
                       </FormControl>

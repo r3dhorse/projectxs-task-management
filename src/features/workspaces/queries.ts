@@ -75,6 +75,7 @@ export const getWorkspaceInfo = async ({ workspaceId }: GetWorkspaceInfoProps) =
   );
 
   return {
-    name: workspace.name
+    name: workspace.name,
+    description: workspace.description
   };
 };
