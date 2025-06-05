@@ -16,7 +16,6 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useUpdateProject } from "../api/use-update-project";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useDeleteProject } from "../api/use-delete-project";
-import { toast } from 'sonner';
 
 
 
@@ -31,7 +30,6 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
   const { mutate, isPending } = useUpdateProject();
   const {
     mutate: deleteProject,
-    isPending: isDeletingProject,
   } = useDeleteProject();
 
   const [DeleteDialog, confirmDelete] = useConfirm(

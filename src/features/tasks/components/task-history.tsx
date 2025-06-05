@@ -1,6 +1,5 @@
 "use client";
 
-import { TaskHistoryEntry } from "../types/history";
 import { formatHistoryMessage, getActionColor } from "../utils/history";
 import { formatDistanceToNow } from "date-fns";
 import { useGetTaskHistory } from "../api/use-get-task-history";
@@ -52,8 +51,7 @@ export const TaskHistory = ({ taskId }: TaskHistoryProps) => {
                 entry.userName,
                 entry.field,
                 entry.oldValue,
-                entry.newValue,
-                entry.details
+                entry.newValue
               )}
             </p>
             <p className="text-gray-500 text-xs mt-1">

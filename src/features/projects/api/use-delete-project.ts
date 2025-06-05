@@ -29,7 +29,7 @@ export const useDeleteProject = () => {
       return await response.json();
     },
 
-    onSuccess: ({ data }) => {
+    onSuccess: () => {
       toast.success("Project deleted");
       router.refresh()
       queryClient.invalidateQueries();

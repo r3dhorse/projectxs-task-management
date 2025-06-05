@@ -61,7 +61,7 @@ export const EditTaskForm = ({
     resolver: zodResolver(trimmedSchema),
     defaultValues: {
       ...initialValues,
-      assigneeId: initialValues.assigneeId || "",
+      assigneeId: initialValues.assigneeId || "unassigned",
       dueDate: initialValues.dueDate
         ? new Date(initialValues.dueDate)
         : undefined
@@ -72,7 +72,7 @@ export const EditTaskForm = ({
     const payload: z.infer<typeof createTaskSchema> = {
       ...values,
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
-      assigneeId: values.assigneeId || "", // Ensure empty string instead of undefined
+      assigneeId: values.assigneeId === "unassigned" ? "" : values.assigneeId || "", // Ensure empty string instead of undefined
       attachmentId: initialValues.attachmentId || "", // Preserve existing attachment
       workspaceId
     };
@@ -147,6 +147,9 @@ export const EditTaskForm = ({
                       </FormControl>
                       <FormMessage />
                       <SelectContent>
+                        <SelectItem value="unassigned">
+                          Unassigned
+                        </SelectItem>
                         {membertOptions.map((member) => (
                           <SelectItem key={member.id} value={String(member.id)}>
                             {member.name}

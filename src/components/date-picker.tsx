@@ -15,15 +15,17 @@ interface DatePickerProps {
   onChange: (date: Date) => void;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 };
 
-export const DatePicker = ({ value, onChange, className, placeholder = "Select Date" }: DatePickerProps) => {
+export const DatePicker = ({ value, onChange, className, placeholder = "Select Date", disabled }: DatePickerProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           size="lg"
+          disabled={disabled}
           className={cn(
             "w-full justify-start text-left font-normal px-3",
             !value && "text-muted-foreground",

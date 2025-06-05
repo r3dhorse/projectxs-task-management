@@ -14,6 +14,7 @@ import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import { KanbanBoard } from "./kanban-board";
 import { useCallback } from "react";
+import { PopulatedTask } from "../types";
 
 
 export const TaskViewSwitcher = () => {
@@ -41,7 +42,7 @@ export const TaskViewSwitcher = () => {
     dueDate,
   });
 
-  const onKanbanChange = useCallback((_tasks: Task[]) => {
+  const onKanbanChange = useCallback(() => {
     // This will be handled by React Query's cache update
   }, []);
 
@@ -71,12 +72,7 @@ export const TaskViewSwitcher = () => {
             >
               Kanban
             </TabsTrigger>
-            <TabsTrigger
-              className="h-8 w-full lg:w-auto"
-              value="calendar"
-            >
-              Calendar
-            </TabsTrigger>
+          
           </TabsList>
 
           {/* Button with vertical margin on mobile */}
@@ -106,18 +102,16 @@ export const TaskViewSwitcher = () => {
           <>
             {/* Tab content */}
             <TabsContent value="table" className="mt-0">
-              <DataTable columns={columns} data={tasks?.documents ?? []} />
+              <DataTable columns={columns} data={(tasks?.documents ?? []) as unknown as PopulatedTask[]} />
 
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
               <KanbanBoard
-                data={tasks?.documents ?? []}
+                data={(tasks?.documents ?? []) as unknown as PopulatedTask[]}
                 onChange={onKanbanChange}
               />
             </TabsContent>
-            <TabsContent value="calendar" className="mt-0">
-              {JSON.stringify(tasks)}
-            </TabsContent>
+        
           </>
         )}
       </div>

@@ -21,16 +21,16 @@ const routes = [
     activeIcon: GoCheckCircleFill,
   },
   {
-    label: "Setting",
-    href: "/settings",
-    icon: SettingsIcon,
-    activeIcon: SettingsIcon,
-  },
-  {
     label: "Members",
     href: "/members",
     icon: UsersIcon,
     activeIcon: UsersIcon,
+  },
+   {
+    label: "Setting",
+    href: "/settings",
+    icon: SettingsIcon,
+    activeIcon: SettingsIcon,
   },
 ];
 

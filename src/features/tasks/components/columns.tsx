@@ -2,14 +2,14 @@
 
 import { ArrowUpDown, MoreVertical } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
-import { Task } from "../types"
+import { PopulatedTask } from "../types"
 import { Button } from "@/components/ui/button"
 import { TaskDate } from "./task-date"
 import { Badge } from "@/components/ui/badge"
 import { snakeCaseTotitleCase } from "@/lib/utils"
 import { TaskActions } from "./task-actions"
 
-export const columns: ColumnDef<Task>[] = [
+export const columns: ColumnDef<PopulatedTask>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -75,13 +75,14 @@ export const columns: ColumnDef<Task>[] = [
 
     cell: ({ row }) => {
       const assignees = row.original.assignees || [];
+      const assigneeWithName = assignees as Array<{ $id: string; name?: string; [key: string]: unknown }>;
 
       return (
         <div className="flex items-center gap-x-2">
-          {assignees.length > 0 ? (
-            assignees.map((assignee: { $id: string; name: string }) => (
+          {assigneeWithName.length > 0 ? (
+            assigneeWithName.map((assignee) => (
               <span key={assignee.$id} className="text-sm font-medium">
-                {assignee.name}
+                {assignee.name || 'Unknown'}
               </span>
             ))
           ) : (

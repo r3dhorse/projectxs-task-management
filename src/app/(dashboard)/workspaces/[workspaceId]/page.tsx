@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/date-picker";
 import { CalendarIcon, UsersIcon, CheckCircle2Icon, Clock3Icon, ListTodoIcon, BarChart3Icon } from "lucide-react";
 import { TaskStatus } from "@/features/tasks/types";
+import { Models } from "node-appwrite";
 import { subDays, isAfter, isBefore } from "date-fns";
 import { DottedSeparator } from "@/components/dotted-separator";
 import { UserButton } from "@/features/auth/components/user-button";
@@ -30,6 +31,20 @@ interface MemberPerformance {
   completionRate: number;
 }
 
+interface PopulatedTask extends Models.Document {
+  name: string;
+  status: TaskStatus;
+  workspaceId: string;
+  assigneeId: string;
+  projectId: string;
+  position: number;
+  dueDate: string;
+  description?: string;
+  attachmentId?: string;
+  project?: Models.Document;
+  assignees?: Models.Document[];
+}
+
 const WorkspaceIdPage = () => {
   const workspaceId = useWorkspaceId();
   const [dateFrom, setDateFrom] = useState<Date | undefined>(subDays(new Date(), 30));
@@ -48,11 +63,12 @@ const WorkspaceIdPage = () => {
   const isLoading = isLoadingMembers || isLoadingTasks;
 
   // Filter tasks by date range
-  const filteredTasks = tasks?.documents.filter(task => {
+  // @ts-expect-error - Tasks are enriched with project and assignees from the API
+  const filteredTasks = (tasks?.documents.filter((task) => {
     if (!dateFrom || !dateTo) return true;
     const taskDate = new Date(task.$createdAt);
     return isAfter(taskDate, dateFrom) && isBefore(taskDate, dateTo);
-  }) || [];
+  }) || []) as PopulatedTask[];
 
   // Calculate statistics
   const totalMembers = members?.documents.length || 0;

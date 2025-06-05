@@ -29,7 +29,7 @@ export const useUpdateProject = () => {
       return await response.json();
     },
 
-    onSuccess: ({ data }) => {
+    onSuccess: () => {
       toast.success("Project updated");
       router.refresh()
       queryClient.invalidateQueries();

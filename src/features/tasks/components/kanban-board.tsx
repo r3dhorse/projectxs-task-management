@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
-import { Task, TaskStatus } from "../types";
+import { Task, TaskStatus, PopulatedTask } from "../types";
 import { KanbanColumn } from "./kanban-column";
 import { KanbanCard } from "./kanban-card";
 import { useUpdateTask } from "../api/use-update-task";
@@ -11,8 +11,8 @@ import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { useCreateTaskModal } from "../hooks/use-create-task-modal";
 
 interface KanbanBoardProps {
-  data: Task[];
-  onChange: (tasks: Task[]) => void;
+  data: PopulatedTask[];
+  onChange?: (tasks: PopulatedTask[]) => void;
 }
 
 const boards = [
@@ -160,7 +160,7 @@ export const KanbanBoard = ({ data, onChange }: KanbanBoardProps) => {
           position: Math.min((destination.index + 1) * 1000, 1_000_000),
         });
 
-        onChange(tasksToUpdate);
+        onChange?.(tasksToUpdate);
         
         // Update task with correct API format
         const taskUpdate = updatesPayload[0];
@@ -175,7 +175,6 @@ export const KanbanBoard = ({ data, onChange }: KanbanBoardProps) => {
             assigneeId: taskToMove.assigneeId,
             description: taskToMove.description,
             attachmentId: taskToMove.attachmentId,
-            position: taskUpdate.position,
           }
         });
       } else {
@@ -195,7 +194,7 @@ export const KanbanBoard = ({ data, onChange }: KanbanBoardProps) => {
           position: minimumPosition + (index + 1) * 1000,
         }));
 
-        onChange(
+        onChange?.(
           data.map((task) => {
             const update = updatesPayload.find((u) => u.$id === task.$id);
             if (update) {
@@ -224,7 +223,6 @@ export const KanbanBoard = ({ data, onChange }: KanbanBoardProps) => {
               assigneeId: task.assigneeId,
               description: task.description,
               attachmentId: task.attachmentId,
-              position: update.position,
             }
           });
         });

@@ -21,7 +21,7 @@ export const useCreateTask = () => {
       const response = await client.api.tasks["$post"]({ json });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" })) as { error?: string };
         throw new Error(errorData.error || `Failed to create task (${response.status})`);
       }
       return await response.json();

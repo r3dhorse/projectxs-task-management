@@ -1,7 +1,7 @@
 "use client";
 
 import { Droppable } from "@hello-pangea/dnd";
-import { Task } from "../types";
+import { PopulatedTask } from "../types";
 import { KanbanCard } from "./kanban-card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -13,7 +13,7 @@ interface KanbanColumnProps {
     label: string;
     color: string;
   };
-  tasks: Task[];
+  tasks: PopulatedTask[];
 }
 
 export const KanbanColumn = ({ board, tasks }: KanbanColumnProps) => {

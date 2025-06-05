@@ -27,7 +27,7 @@ async function addAttachmentField() {
     console.error('❌ Error adding field:', error);
     
     // If the error is because the attribute already exists, that's fine
-    if (error.message?.includes('Attribute already exists')) {
+    if (error instanceof Error && error.message?.includes('Attribute already exists')) {
       console.log('ℹ️  Field already exists, skipping...');
     }
   }

@@ -11,7 +11,6 @@ import { DottedSeparator } from "@/components/dotted-separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "../api/use-create-task";
 import { DatePicker } from "@/components/date-picker";
@@ -38,7 +37,6 @@ export const CreateTaskForm = ({
   membertOptions,
   workspaceId,
 }: CreateTaskFormProps) => {
-  const router = useRouter();
   const { mutate, isPending } = useCreateTask();
   const [attachmentId, setAttachmentId] = useState<string>("");
 
@@ -55,6 +53,7 @@ export const CreateTaskForm = ({
       ...values,
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
       attachmentId: attachmentId || "", // Send empty string instead of undefined
+      assigneeId: values.assigneeId === "unassigned" ? "" : values.assigneeId || "", // Send empty string if unassigned
       workspaceId
     };
 
@@ -128,6 +127,9 @@ export const CreateTaskForm = ({
                       </FormControl>
                       <FormMessage />
                       <SelectContent>
+                        <SelectItem value="unassigned">
+                          Unassigned
+                        </SelectItem>
                         {membertOptions.map((member) => (
                           <SelectItem key={member.id} value={String(member.id)}>
                             {member.name}

@@ -19,11 +19,13 @@ export const useCreateTaskHistory = () => {
 
       return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (response) => {
       // Invalidate and refetch task history
-      queryClient.invalidateQueries({
-        queryKey: ["task-history", data.data.taskId],
-      });
+      if ('data' in response) {
+        queryClient.invalidateQueries({
+          queryKey: ["task-history", response.data.taskId],
+        });
+      }
     },
     onError: () => {
       toast.error("Failed to log activity");

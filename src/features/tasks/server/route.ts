@@ -277,7 +277,7 @@ const app = new Hono()
         return c.json({ data: task });
       } catch (error) {
         console.error("Task creation error:", error);
-        return c.json({ error: error.message || "Failed to create task" }, 500);
+        return c.json({ error: error instanceof Error ? error.message : "Failed to create task" }, 500);
       }
     }
   )
@@ -432,7 +432,7 @@ const app = new Hono()
                 historyData
               );
             }
-          } catch (historyError: any) {
+          } catch (historyError) {
             console.error("Failed to create task history entries:", historyError);
             // Don't fail the task update if history fails
           }
@@ -441,7 +441,7 @@ const app = new Hono()
         return c.json({ data: task });
       } catch (error) {
         console.error("Task update error:", error);
-        return c.json({ error: error.message || "Failed to update task" }, 500);
+        return c.json({ error: error instanceof Error ? error.message : "Failed to update task" }, 500);
       }
     }
   )

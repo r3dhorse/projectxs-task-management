@@ -37,7 +37,7 @@ const app = new Hono()
         });
 
         return c.json({ success: true })
-      } catch (error) {
+      } catch {
         return c.json({ error: "Invalid email or password" }, 401)
       }
     }
@@ -71,7 +71,7 @@ const app = new Hono()
         });
 
         return c.json({ success: true })
-      } catch (error) {
+      } catch {
         return c.json({ error: "Failed to create account" }, 400)
       }
     }

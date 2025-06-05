@@ -1,7 +1,7 @@
 "use client";
 
 import { Draggable } from "@hello-pangea/dnd";
-import { Task } from "../types";
+import { PopulatedTask } from "../types";
 import { MoreHorizontal } from "lucide-react";
 import { TaskDate } from "./task-date";
 import { TaskActions } from "./task-actions";
@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 
 interface KanbanCardProps {
-  task: Task;
+  task: PopulatedTask;
   index: number;
 }
 

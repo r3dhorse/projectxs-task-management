@@ -28,7 +28,7 @@ export const useResetInviteCode = () => {
       return await response.json();
     },
 
-    onSuccess: ({ data }) => {
+    onSuccess: () => {
       toast.success("Invite code reset");
       router.refresh();
       queryClient.invalidateQueries();

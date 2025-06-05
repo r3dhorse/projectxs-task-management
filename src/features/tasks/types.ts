@@ -19,3 +19,8 @@ export type Task = Models.Document & {
   description?: string;
   attachmentId?: string;
 }
+
+export type PopulatedTask = Task & {
+  project?: Models.Document;
+  assignees?: Models.Document[];
+}
