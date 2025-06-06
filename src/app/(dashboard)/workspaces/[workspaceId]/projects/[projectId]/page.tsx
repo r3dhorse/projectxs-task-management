@@ -5,6 +5,7 @@ import { TaskViewSwitcher } from "@/features/tasks/components/task-view-switcher
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { UserInfoCard } from "@/components/user-info-card";
 
 interface ProjectIdPageProps {
   params: { projectId: string }
@@ -26,6 +27,7 @@ const ProjectIdPage = async ({
 
   return (
     <div className="flex flex-col gap-y-4">
+      <UserInfoCard />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           {/* Avatar */}

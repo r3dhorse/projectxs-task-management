@@ -14,6 +14,7 @@ import { TaskStatus } from "@/features/tasks/types";
 import { Models } from "node-appwrite";
 import { subDays, isAfter, isBefore } from "date-fns";
 import { DottedSeparator } from "@/components/dotted-separator";
+import { UserInfoCard } from "@/components/user-info-card";
 
 interface TaskStatusCount {
   [TaskStatus.BACKLOG]: number;
@@ -202,6 +203,11 @@ const WorkspaceIdPage = () => {
               </div>
             </div>
           </Card>
+        </div>
+        
+        {/* User Info */}
+        <div className="flex items-start">
+          <UserInfoCard />
         </div>
       </div>
 

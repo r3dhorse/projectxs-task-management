@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { loginSchema } from "../schemas";
+import { loginSchema, changePasswordSchema } from "../schemas";
 import { createAdminClient } from "@/lib/appwrite";
 import { deleteCookie, setCookie } from "hono/cookie"
 import { AUTH_COOKIE } from "../constants";
@@ -51,6 +51,23 @@ const app = new Hono()
       await account.deleteSession("current")
 
       return c.json({ success: true });
+    }
+  )
+
+  .post("/change-password",
+    sessionMiddleware,
+    zValidator("json", changePasswordSchema),
+    async (c) => {
+      try {
+        const { oldPassword, newPassword } = c.req.valid("json");
+        const account = c.get("account");
+
+        await account.updatePassword(newPassword, oldPassword);
+
+        return c.json({ success: true });
+      } catch {
+        return c.json({ error: "Invalid current password or failed to update password" }, 400);
+      }
     }
   );
 
