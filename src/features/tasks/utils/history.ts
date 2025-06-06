@@ -110,8 +110,8 @@ export function formatHistoryMessage(
     case TaskHistoryAction.ASSIGNEE_CHANGED:
       return `${userName} changed assignee from ${formatValue(oldValue, "Unassigned")} to ${formatValue(newValue, "Unassigned")}`;
     
-    case TaskHistoryAction.PROJECT_CHANGED:
-      return `${userName} moved task to project ${formatValue(newValue)}`;
+    case TaskHistoryAction.SERVICE_CHANGED:
+      return `${userName} moved task to service ${formatValue(newValue)}`;
     
     case TaskHistoryAction.DUE_DATE_CHANGED:
       return `${userName} changed due date from ${formatDate(oldValue)} to ${formatDate(newValue)}`;
@@ -177,7 +177,7 @@ export function getActionColor(action: TaskHistoryAction): string {
       return "bg-blue-500";
     case TaskHistoryAction.ASSIGNEE_CHANGED:
       return "bg-purple-500";
-    case TaskHistoryAction.PROJECT_CHANGED:
+    case TaskHistoryAction.SERVICE_CHANGED:
       return "bg-indigo-500";
     case TaskHistoryAction.DUE_DATE_CHANGED:
       return "bg-yellow-500";

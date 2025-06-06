@@ -57,7 +57,7 @@ const WorkspaceIdPage = () => {
   const { data: tasks, isLoading: isLoadingTasks } = useGetTasks({
     workspaceId,
     assigneeId: null,
-    projectId: null,
+    serviceId: null,
     status: null,
     search: null,
     dueDate: null,

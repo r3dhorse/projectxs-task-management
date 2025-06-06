@@ -3,18 +3,157 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { createTaskSchema } from "../schemas";
 import { getMember } from "@/features/members/utils";
-import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID, TASK_HISTORY_ID } from "@/config";
+import { DATABASE_ID, MEMBERS_ID, SERVICES_ID, TASKS_ID, TASK_HISTORY_ID } from "@/config";
 import { ID, Query } from "node-appwrite";
 import { z } from "zod";
 import { Task, TaskStatus } from "../types";
 import { createAdminClient } from "@/lib/appwrite";
-import { Project } from "@/features/projects/types";
+import { Service } from "@/features/services/types";
 import { TaskHistoryAction } from "../types/history";
 import { detectTaskChanges } from "../utils/history";
 
 
 
 const app = new Hono()
+  .get(
+    "/followed",
+    sessionMiddleware,
+    zValidator(
+      "query",
+      z.object({
+        workspaceId: z.string(),
+        serviceId: z.string().nullish(),
+        status: z.nativeEnum(TaskStatus).nullish(),
+        search: z.string().nullish(),
+        dueDate: z.string().nullish(),
+      })
+    ),
+    async (c) => {
+      const { users } = await createAdminClient();
+      const databases = c.get("databases");
+      const user = c.get("user");
+      const {
+        workspaceId,
+        serviceId,
+        status,
+        search,
+        dueDate
+      } = c.req.valid("query");
+
+      const member = await getMember({
+        databases,
+        workspaceId,
+        userId: user.$id,
+      });
+
+      if (!member) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const query = [
+        Query.equal("workspaceId", workspaceId),
+        Query.orderDesc("$createdAt")
+      ];
+
+      if (serviceId) {
+        query.push(Query.equal("serviceId", serviceId));
+      }
+
+      if (status) {
+        query.push(Query.equal("status", status));
+      }
+
+      if (dueDate) {
+        query.push(Query.equal("dueDate", dueDate));
+      }
+
+      if (search) {
+        query.push(Query.search("name", search));
+      }
+
+      const allTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        query,
+      );
+
+      console.log("Followed tasks - Total tasks found:", allTasks.documents.length);
+      console.log("Followed tasks - Current user ID:", user.$id);
+
+      // Filter tasks where user is in followedIds
+      const filteredDocuments = allTasks.documents.filter(task => {
+        try {
+          const followedIds = task.followedIds ? JSON.parse(task.followedIds as string) : [];
+          console.log(`Task ${task.$id} followedIds:`, followedIds);
+          const isFollowing = followedIds.includes(user.$id);
+          console.log(`User ${user.$id} is following task ${task.$id}:`, isFollowing);
+          return isFollowing;
+        } catch (error) {
+          console.error(`Error parsing followedIds for task ${task.$id}:`, error);
+          return false;
+        }
+      });
+
+      console.log("Followed tasks - Filtered tasks count:", filteredDocuments.length);
+
+      const tasks = {
+        ...allTasks,
+        documents: filteredDocuments,
+        total: filteredDocuments.length
+      };
+
+      const serviceIds = tasks.documents.map((task) => task.serviceId);
+      const assigneeIds = [...new Set(tasks.documents.map((task) => task.assigneeId).filter(Boolean))];
+
+      const services = await databases.listDocuments<Service>(
+        DATABASE_ID,
+        SERVICES_ID,
+        serviceIds.length > 0 ? [Query.contains("$id", serviceIds)] : [],
+      );
+
+      const members = await databases.listDocuments(
+        DATABASE_ID,
+        MEMBERS_ID,
+        assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : [],
+      );
+
+      const assignees = await Promise.all(
+        members.documents.map(async (member) => {
+          const user = await users.get(member.userId);
+
+          return {
+            ...member,
+            name: user.name,
+            email: user.email,
+          }
+        })
+      );
+
+      const populatedTasks = tasks.documents.map((task) => {
+        const service = services.documents.find(
+          (service) => service.$id === task.serviceId,
+        );
+        const taskAssignee = assignees.find(
+          (assignee) => assignee.$id === task.assigneeId,
+        );
+        const taskAssignees = taskAssignee ? [taskAssignee] : [];
+
+        return {
+          ...task,
+          service,
+          assignees: taskAssignees,
+        };
+      });
+
+      return c.json({
+        data: {
+          ...tasks,
+          documents: populatedTasks,
+        },
+      });
+    }
+  )
+
   .delete(
     "/:taskId",
     sessionMiddleware,
@@ -23,11 +162,24 @@ const app = new Hono()
       const databases = c.get("databases");
       const { taskId } = c.req.param();
 
-      const task = await databases.getDocument<Task>(
-        DATABASE_ID,
-        TASKS_ID,
-        taskId,
-      );
+      // Validate taskId format
+      if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+        return c.json({ error: "Invalid task ID format" }, 400);
+      }
+
+      let task: Task;
+      try {
+        task = await databases.getDocument<Task>(
+          DATABASE_ID,
+          TASKS_ID,
+          taskId,
+        );
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+          return c.json({ error: "Task not found" }, 404);
+        }
+        throw error;
+      }
 
       const member = await getMember({
         databases,
@@ -56,7 +208,7 @@ const app = new Hono()
       "query",
       z.object({
         workspaceId: z.string(),
-        projectId: z.string().nullish(),
+        serviceId: z.string().nullish(),
         assigneeId: z.string().nullish(),
         status: z.nativeEnum(TaskStatus).nullish(),
         search: z.string().nullish(),
@@ -70,7 +222,7 @@ const app = new Hono()
       const user = c.get("user");
       const {
         workspaceId,
-        projectId,
+        serviceId,
         status,
         search,
         assigneeId,
@@ -92,9 +244,9 @@ const app = new Hono()
         Query.orderDesc("$createdAt")
       ];
 
-      if (projectId) {
-        console.log("project:", projectId)
-        query.push(Query.equal("projectId", projectId));
+      if (serviceId) {
+        console.log("service:", serviceId)
+        query.push(Query.equal("serviceId", serviceId));
       }
 
       if (status) {
@@ -123,13 +275,13 @@ const app = new Hono()
         query,
       );
 
-      const projectIds = tasks.documents.map((task) => task.projectId);
+      const serviceIds = tasks.documents.map((task) => task.serviceId);
       const assigneeIds = [...new Set(tasks.documents.map((task) => task.assigneeId).filter(Boolean))];
 
-      const projects = await databases.listDocuments<Project>(
+      const services = await databases.listDocuments<Service>(
         DATABASE_ID,
-        PROJECTS_ID,
-        projectIds.length > 0 ? [Query.contains("$id", projectIds)] : [],
+        SERVICES_ID,
+        serviceIds.length > 0 ? [Query.contains("$id", serviceIds)] : [],
       );
 
       const members = await databases.listDocuments(
@@ -151,8 +303,8 @@ const app = new Hono()
       );
 
       const populatedTasks = tasks.documents.map((task) => {
-        const project = projects.documents.find(
-          (project) => project.$id === task.projectId,
+        const service = services.documents.find(
+          (service) => service.$id === task.serviceId,
         );
         const taskAssignee = assignees.find(
           (assignee) => assignee.$id === task.assigneeId,
@@ -161,7 +313,7 @@ const app = new Hono()
 
         return {
           ...task,
-          project,
+          service,
           assignees: taskAssignees,
         };
       });
@@ -188,18 +340,19 @@ const app = new Hono()
           name,
           status,
           workspaceId,
-          projectId,
+          serviceId,
           dueDate,
           assigneeId,
           description,
           attachmentId,
+          followedIds,
         } = c.req.valid("json");
 
         console.log("Creating task with data:", {
           name,
           status,
           workspaceId,
-          projectId,
+          serviceId,
           dueDate,
           assigneeId,
           description,
@@ -232,24 +385,51 @@ const app = new Hono()
             ? highestPositionTask.documents[0].position + 1000
             : 1000;
 
+        // Ensure creator is always in the followedIds
+        let defaultFollowedIds = [];
+        try {
+          defaultFollowedIds = followedIds ? JSON.parse(followedIds) : [];
+        } catch (parseError) {
+          console.error("Error parsing followedIds:", parseError);
+          defaultFollowedIds = [];
+        }
+        
+        if (!defaultFollowedIds.includes(user.$id)) {
+          defaultFollowedIds.push(user.$id);
+        }
+
+        console.log("Task creation - User ID:", user.$id);
+        console.log("Task creation - Input followedIds:", followedIds);
+        console.log("Task creation - Parsed followedIds:", defaultFollowedIds);
+        console.log("Task creation - Final followedIds JSON:", JSON.stringify(defaultFollowedIds));
+
         const taskData: Record<string, unknown> = {
           name,
           status,
           workspaceId,
-          projectId,
+          serviceId,
           dueDate,
           assigneeId,
           description,
           position: newPosition,
           attachmentId: attachmentId || "", // Always include attachmentId, empty string if not provided
+          followedIds: JSON.stringify(defaultFollowedIds), // Serialize array to JSON string
         };
 
+        console.log("Task creation - Data being sent to database:", taskData);
+        
         const task = await databases.createDocument(
           DATABASE_ID,
           TASKS_ID,
           ID.unique(),
           taskData
         );
+
+        console.log("Task creation - Created task:", {
+          id: task.$id,
+          followedIds: task.followedIds,
+          followedIdsType: typeof task.followedIds
+        });
 
         // Create history entry for task creation
         try {
@@ -294,20 +474,34 @@ const app = new Hono()
         const {
           name,
           status,
-          projectId,
+          serviceId,
           dueDate,
           assigneeId,
           description,
           attachmentId,
+          followedIds,
         } = c.req.valid("json");
 
         const { taskId } = c.req.param();
 
-        const existingTask = await databases.getDocument<Task>(
-          DATABASE_ID,
-          TASKS_ID,
-          taskId,
-        )
+        // Validate taskId format
+        if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+          return c.json({ error: "Invalid task ID format" }, 400);
+        }
+
+        let existingTask: Task;
+        try {
+          existingTask = await databases.getDocument<Task>(
+            DATABASE_ID,
+            TASKS_ID,
+            taskId,
+          );
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+            return c.json({ error: "Task not found" }, 404);
+          }
+          throw error;
+        }
 
         const member = await getMember({
           databases,
@@ -322,7 +516,7 @@ const app = new Hono()
         const updateData: Record<string, unknown> = {
           name,
           status,
-          projectId,
+          serviceId,
           dueDate,
           assigneeId,
           description,
@@ -331,6 +525,11 @@ const app = new Hono()
         // Handle attachmentId - always include if provided, allow empty string to clear attachment
         if (attachmentId !== undefined) {
           updateData.attachmentId = attachmentId; // Include attachmentId even if empty to clear it
+        }
+
+        // Handle followedIds - always include if provided
+        if (followedIds !== undefined) {
+          updateData.followedIds = followedIds; // Update followers list
         }
 
         // Detect what changed for history tracking
@@ -387,15 +586,15 @@ const app = new Hono()
                     newValue = "Unassigned";
                   }
                   break;
-                case "projectId":
-                  action = TaskHistoryAction.PROJECT_CHANGED;
-                  // Resolve project IDs to names
+                case "serviceId":
+                  action = TaskHistoryAction.SERVICE_CHANGED;
+                  // Resolve service IDs to names
                   if (change.newValue) {
                     try {
-                      const project = await databases.getDocument(DATABASE_ID, PROJECTS_ID, change.newValue);
-                      newValue = project.name;
+                      const service = await databases.getDocument(DATABASE_ID, SERVICES_ID, change.newValue);
+                      newValue = service.name;
                     } catch {
-                      newValue = "Unknown Project";
+                      newValue = "Unknown Service";
                     }
                   }
                   break;
@@ -455,11 +654,24 @@ const app = new Hono()
       const { users } = await createAdminClient();
       const { taskId } = c.req.param();
 
-      const task = await databases.getDocument<Task>(
-        DATABASE_ID,
-        TASKS_ID,
-        taskId
-      );
+      // Validate taskId format
+      if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+        return c.json({ error: "Invalid task ID format" }, 400);
+      }
+
+      let task: Task;
+      try {
+        task = await databases.getDocument<Task>(
+          DATABASE_ID,
+          TASKS_ID,
+          taskId
+        );
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+          return c.json({ error: "Task not found" }, 404);
+        }
+        throw error;
+      }
 
       const currentMember = await getMember({
         databases,
@@ -471,10 +683,10 @@ const app = new Hono()
         return c.json({ error: "Unathorized" }, 401)
       }
 
-      const project = await databases.getDocument<Project>(
+      const service = await databases.getDocument<Service>(
         DATABASE_ID,
-        PROJECTS_ID,
-        task.projectId,
+        SERVICES_ID,
+        task.serviceId,
       );
 
       const members = await databases.listDocuments(
@@ -497,12 +709,172 @@ const app = new Hono()
       return c.json({
         data: {
           ...task,
-          project,
+          service,
           assignees,
         },
       });
     }
-  );
+  )
+
+  .post(
+    "/:taskId/follow",
+    sessionMiddleware,
+    async (c) => {
+      try {
+        const user = c.get("user");
+        const databases = c.get("databases");
+        const { taskId } = c.req.param();
+
+        // Validate taskId format
+        if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+          return c.json({ error: "Invalid task ID format" }, 400);
+        }
+
+        let task: Task;
+        try {
+          task = await databases.getDocument<Task>(
+            DATABASE_ID,
+            TASKS_ID,
+            taskId,
+          );
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+            return c.json({ error: "Task not found" }, 404);
+          }
+          throw error;
+        }
+
+        const member = await getMember({
+          databases,
+          workspaceId: task.workspaceId,
+          userId: user.$id,
+        });
+
+        if (!member) {
+          return c.json({ error: "Unauthorized" }, 401);
+        }
+
+        // Add user to followedIds if not already following
+        const followedIds = task.followedIds ? JSON.parse(task.followedIds as string) : [];
+        if (!followedIds.includes(user.$id)) {
+          followedIds.push(user.$id);
+
+          await databases.updateDocument<Task>(
+            DATABASE_ID,
+            TASKS_ID,
+            taskId,
+            { followedIds: JSON.stringify(followedIds) }
+          );
+        }
+
+        return c.json({ data: { isFollowing: true } });
+      } catch (error) {
+        console.error("Follow task error:", error);
+        return c.json({ error: "Failed to follow task" }, 500);
+      }
+    }
+  )
+
+  .post(
+    "/:taskId/unfollow",
+    sessionMiddleware,
+    async (c) => {
+      try {
+        const user = c.get("user");
+        const databases = c.get("databases");
+        const { taskId } = c.req.param();
+
+        // Validate taskId format
+        if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+          return c.json({ error: "Invalid task ID format" }, 400);
+        }
+
+        let task: Task;
+        try {
+          task = await databases.getDocument<Task>(
+            DATABASE_ID,
+            TASKS_ID,
+            taskId,
+          );
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+            return c.json({ error: "Task not found" }, 404);
+          }
+          throw error;
+        }
+
+        const member = await getMember({
+          databases,
+          workspaceId: task.workspaceId,
+          userId: user.$id,
+        });
+
+        if (!member) {
+          return c.json({ error: "Unauthorized" }, 401);
+        }
+
+        // Remove user from followedIds
+        const followedIds = task.followedIds ? JSON.parse(task.followedIds as string) : [];
+        const updatedFollowedIds = followedIds.filter((id: string) => id !== user.$id);
+
+        await databases.updateDocument<Task>(
+          DATABASE_ID,
+          TASKS_ID,
+          taskId,
+          { followedIds: JSON.stringify(updatedFollowedIds) }
+        );
+
+        return c.json({ data: { isFollowing: false } });
+      } catch (error) {
+        console.error("Unfollow task error:", error);
+        return c.json({ error: "Failed to unfollow task" }, 500);
+      }
+    }
+  )
+
+  .get(
+    "/test-followed",
+    sessionMiddleware,
+    async (c) => {
+      const databases = c.get("databases");
+      const user = c.get("user");
+      
+      try {
+        // Get just a few tasks to test
+        const allTasks = await databases.listDocuments(
+          DATABASE_ID,
+          TASKS_ID,
+          [Query.limit(5)]
+        );
+        
+        console.log("Test endpoint - Found tasks:", allTasks.documents.length);
+        console.log("Test endpoint - User ID:", user.$id);
+        
+        // Check each task's followedIds field
+        const taskInfo = allTasks.documents.map(task => ({
+          id: task.$id,
+          name: task.name,
+          followedIds: task.followedIds,
+          followedIdsType: typeof task.followedIds,
+          hasFollowedIds: 'followedIds' in task
+        }));
+        
+        console.log("Test endpoint - Task info:", taskInfo);
+        
+        return c.json({ 
+          data: {
+            userCheck: user.$id,
+            taskCount: allTasks.documents.length,
+            tasks: taskInfo
+          }
+        });
+      } catch (error) {
+        console.error("Test endpoint error:", error);
+        return c.json({ error: error instanceof Error ? error.message : "Test failed" }, 500);
+      }
+    }
+  )
+
 
 
 export default app;

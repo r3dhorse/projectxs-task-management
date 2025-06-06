@@ -1,0 +1,36 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { InferRequestType, InferResponseType } from "hono";
+
+import { client } from "@/lib/rpc";
+import { toast } from "sonner";
+
+type ResponseType = InferResponseType<typeof client.api.tasks[":taskId"]["unfollow"]["$post"], 200>;
+type RequestType = InferRequestType<typeof client.api.tasks[":taskId"]["unfollow"]["$post"]>;
+
+export const useUnfollowTask = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation<ResponseType, Error, RequestType>({
+    mutationFn: async ({ param }) => {
+      const response = await client.api.tasks[":taskId"]["unfollow"]["$post"]({
+        param,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to unfollow task");
+      }
+
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast.success("Task unfollowed successfully");
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["followed-tasks"] });
+    },
+    onError: () => {
+      toast.error("Failed to unfollow task");
+    },
+  });
+
+  return mutation;
+};

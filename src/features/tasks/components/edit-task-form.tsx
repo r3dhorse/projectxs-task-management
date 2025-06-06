@@ -34,22 +34,33 @@ import { DatePicker } from "@/components/date-picker";
 import { TaskStatus, Task } from "../types";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { Textarea } from "@/components/ui/textarea";
+import { MultiSelect } from "@/components/ui/multi-select-simple";
+import { useState } from "react";
 
 interface EditTaskFormProps {
   onCancel?: () => void;
-  projectOptions: { id: string; name: string }[];
+  serviceOptions: { id: string; name: string }[];
   membertOptions: { id: string; name: string }[];
+  userOptions?: { id: string; name: string }[];
   initialValues: Task;
 }
 
 export const EditTaskForm = ({
   onCancel,
-  projectOptions,
+  serviceOptions,
   membertOptions,
+  userOptions,
   initialValues
 }: EditTaskFormProps) => {
   const workspaceId = useWorkspaceId();
   const { mutate, isPending } = useUpdateTask();
+  const [selectedFollowers, setSelectedFollowers] = useState<string[]>(() => {
+    try {
+      return initialValues.followedIds ? JSON.parse(initialValues.followedIds) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const trimmedSchema = createTaskSchema.omit({
     workspaceId: true
@@ -74,7 +85,8 @@ export const EditTaskForm = ({
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
       assigneeId: values.assigneeId === "unassigned" ? "" : values.assigneeId || "", // Ensure empty string instead of undefined
       attachmentId: initialValues.attachmentId || "", // Preserve existing attachment
-      workspaceId
+      workspaceId,
+      followedIds: JSON.stringify(selectedFollowers)
     };
 
 
@@ -86,6 +98,7 @@ export const EditTaskForm = ({
       {
         onSuccess: () => {
           form.reset();
+          setSelectedFollowers([]);
           onCancel?.();
         },
       }
@@ -187,31 +200,31 @@ export const EditTaskForm = ({
                 )}
               />
 
-              {/* Project */}
+              {/* Service */}
               <FormField
                 control={form.control}
-                name="projectId"
+                name="serviceId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project</FormLabel>
+                    <FormLabel>Service</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Project" />
+                          <SelectValue placeholder="Select Service" />
                         </SelectTrigger>
                       </FormControl>
                       <FormMessage />
                       <SelectContent>
-                        {projectOptions.map((project) => (
+                        {serviceOptions.map((service) => (
                           <SelectItem
-                            key={project.id}
-                            value={String(project.id)}
+                            key={service.id}
+                            value={String(service.id)}
                           >
                             <div className="flex items-center gap-x-2">
                               <div className="w-6 h-6 rounded-full bg-blue-700 flex items-center justify-center text-sm font-medium text-white">
-                                {project.name.charAt(0).toUpperCase()}
+                                {service.name.charAt(0).toUpperCase()}
                               </div>
-                              <span>{project.name}</span>
+                              <span>{service.name}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -239,6 +252,24 @@ export const EditTaskForm = ({
                   </FormItem>
                 )}
               />
+
+              {/* Followers */}
+              <FormItem>
+                <FormLabel>Followers</FormLabel>
+                <MultiSelect
+                  options={(userOptions || membertOptions).map(user => ({
+                    value: user.id,
+                    label: user.name
+                  }))}
+                  selected={selectedFollowers}
+                  onChange={setSelectedFollowers}
+                  placeholder="Select followers..."
+                  className="w-full"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Select users who should follow this task.
+                </p>
+              </FormItem>
 
               <DottedSeparator />
               <div className="flex items-center justify-between">

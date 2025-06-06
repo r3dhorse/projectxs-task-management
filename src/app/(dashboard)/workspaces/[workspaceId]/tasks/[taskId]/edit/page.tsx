@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useGetTask } from "@/features/tasks/api/use-get-task";
 import { useGetMembers } from "@/features/members/api/use-get-members";
-import { useGetProjects } from "@/features/projects/api/use-get-project";
+import { useGetServices } from "@/features/services/api/use-get-services";
 import { useUpdateTask } from "@/features/tasks/api/use-update-task";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,20 +38,20 @@ export default function TaskEditPage({ params }: TaskEditPageProps) {
     workspaceId 
   });
   
-  const { data: projects, isLoading: isLoadingProjects } = useGetProjects({ 
+  const { data: services, isLoading: isLoadingServices } = useGetServices({ 
     workspaceId 
   });
 
   const { mutate: updateTask, isPending: isUpdating } = useUpdateTask();
 
-  const isLoading = isLoadingTask || isLoadingMembers || isLoadingProjects;
+  const isLoading = isLoadingTask || isLoadingMembers || isLoadingServices;
 
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
     status: "" as TaskStatus,
     assigneeId: "",
-    projectId: "",
+    serviceId: "",
     dueDate: new Date(),
     attachmentId: "",
   });
@@ -64,7 +64,7 @@ export default function TaskEditPage({ params }: TaskEditPageProps) {
         description: task.description || "",
         status: task.status,
         assigneeId: task.assigneeId,
-        projectId: task.projectId,
+        serviceId: task.serviceId,
         dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
         attachmentId: task.attachmentId || "",
       });
@@ -105,7 +105,7 @@ export default function TaskEditPage({ params }: TaskEditPageProps) {
           description: editForm.description,
           status: editForm.status,
           assigneeId: editForm.assigneeId,
-          projectId: editForm.projectId,
+          serviceId: editForm.serviceId,
           dueDate: editForm.dueDate.toISOString(),
           attachmentId: editForm.attachmentId || undefined,
           workspaceId,
@@ -263,24 +263,24 @@ export default function TaskEditPage({ params }: TaskEditPageProps) {
             </CardContent>
           </Card>
 
-          {/* Project */}
+          {/* Service */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Project</CardTitle>
+              <CardTitle className="text-sm">Service</CardTitle>
             </CardHeader>
             <CardContent>
               <Select
-                value={editForm.projectId}
-                onValueChange={(value) => setEditForm(prev => ({ ...prev, projectId: value }))}
+                value={editForm.serviceId}
+                onValueChange={(value) => setEditForm(prev => ({ ...prev, serviceId: value }))}
                 disabled={isUpdating}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select project" />
+                  <SelectValue placeholder="Select service" />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects?.documents.map((proj) => (
-                    <SelectItem key={proj.$id} value={proj.$id}>
-                      {proj.name}
+                  {services?.documents.map((serv) => (
+                    <SelectItem key={serv.$id} value={serv.$id}>
+                      {serv.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

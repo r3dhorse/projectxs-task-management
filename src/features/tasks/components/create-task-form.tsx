@@ -17,14 +17,20 @@ import { DatePicker } from "@/components/date-picker";
 import { TaskStatus } from "../types";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/file-upload";
+import { MultiSelect } from "@/components/ui/multi-select-simple";
+import { useCurrent } from "@/features/auth/api/use-current";
 
 interface CreateTaskFormProps {
   onCancel?: () => void;
-  projectOptions: {
+  serviceOptions: {
     id: string;
     name: string;
   }[];
   membertOptions: {
+    id: string;
+    name: string;
+  }[];
+  userOptions?: {
     id: string;
     name: string;
   }[];
@@ -33,12 +39,15 @@ interface CreateTaskFormProps {
 
 export const CreateTaskForm = ({
   onCancel,
-  projectOptions,
+  serviceOptions,
   membertOptions,
+  userOptions,
   workspaceId,
 }: CreateTaskFormProps) => {
   const { mutate, isPending } = useCreateTask();
   const [attachmentId, setAttachmentId] = useState<string>("");
+  const [selectedFollowers, setSelectedFollowers] = useState<string[]>([]);
+  const { data: currentUser } = useCurrent();
 
   const schemaWithoutWorkspaceId = createTaskSchema.omit({ workspaceId: true }).extend({
     dueDate: z.date({ required_error: "Due date is required" }),
@@ -49,18 +58,25 @@ export const CreateTaskForm = ({
   });
 
   const onSubmit = (values: z.infer<typeof schemaWithoutWorkspaceId>) => {
+    // Ensure current user is included in followers if not already
+    const followersWithCreator = currentUser && !selectedFollowers.includes(currentUser.$id) 
+      ? [...selectedFollowers, currentUser.$id]
+      : selectedFollowers;
+
     const formattedValues = {
       ...values,
       dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : "",
       attachmentId: attachmentId || "", // Send empty string instead of undefined
       assigneeId: values.assigneeId === "unassigned" ? "" : values.assigneeId || "", // Send empty string if unassigned
-      workspaceId
+      workspaceId,
+      followedIds: JSON.stringify(followersWithCreator)
     };
 
     mutate({ json: formattedValues }, {
       onSuccess: () => {
         form.reset();
         setAttachmentId("");
+        setSelectedFollowers([]);
         onCancel?.();
       },
     });
@@ -177,28 +193,28 @@ export const CreateTaskForm = ({
                 )}
               />
 
-              {/* Project */}
+              {/* Service */}
               <FormField
                 control={form.control}
-                name="projectId"
+                name="serviceId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project</FormLabel>
+                    <FormLabel>Service</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Project" />
+                          <SelectValue placeholder="Select Service" />
                         </SelectTrigger>
                       </FormControl>
                       <FormMessage />
                       <SelectContent>
-                        {projectOptions.map((project) => (
-                          <SelectItem key={project.id} value={String(project.id)}>
+                        {serviceOptions.map((service) => (
+                          <SelectItem key={service.id} value={String(service.id)}>
                             <div className="flex items-center gap-x-2">
                               <div className="w-6 h-6 rounded-full bg-blue-700 flex items-center justify-center text-sm font-medium text-white">
-                                {project.name.charAt(0).toUpperCase()}
+                                {service.name.charAt(0).toUpperCase()}
                               </div>
-                              <span>{project.name}</span>
+                              <span>{service.name}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -227,6 +243,24 @@ export const CreateTaskForm = ({
                   </FormItem>
                 )}
               />
+
+              {/* Followers */}
+              <FormItem>
+                <FormLabel>Followers</FormLabel>
+                <MultiSelect
+                  options={(userOptions || membertOptions).map(user => ({
+                    value: user.id,
+                    label: user.name
+                  }))}
+                  selected={selectedFollowers}
+                  onChange={setSelectedFollowers}
+                  placeholder="Select followers..."
+                  className="w-full"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Select users who should follow this task. You will be added automatically.
+                </p>
+              </FormItem>
 
               {/* Attachment */}
               <div>

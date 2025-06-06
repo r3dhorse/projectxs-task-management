@@ -1,6 +1,6 @@
 import { Sidebar } from "@/components/sidebar";
 import { Navbar } from "@/components/navbar";
-import { CreateProjectModal } from "@/features/projects/components/create-project-modal";
+import { CreateServiceModal } from "@/features/services/components/create-service-modal";
 import { CreateTaskModal } from "@/features/tasks/components/create-task-modal";
 import { EditTaskModal } from "@/features/tasks/components/edit-task-modal";
 import { CreateWorkspaceModal } from "@/features/workspaces/components/create-workspace-modal";
@@ -13,7 +13,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen">
       <CreateWorkspaceModal />
-      <CreateProjectModal />
+      <CreateServiceModal />
       <CreateTaskModal />
       <EditTaskModal />
       <div className="flex w-full h-full">

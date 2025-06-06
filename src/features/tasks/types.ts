@@ -13,14 +13,15 @@ export type Task = Models.Document & {
   status: TaskStatus;
   workspaceId: string;
   assigneeId: string;
-  projectId: string;
+  serviceId: string;
   position: number;
   dueDate: string;
   description?: string;
   attachmentId?: string;
+  followedIds: string; // JSON string of array
 }
 
 export type PopulatedTask = Task & {
-  project?: Models.Document;
+  service?: Models.Document;
   assignees?: Models.Document[];
 }

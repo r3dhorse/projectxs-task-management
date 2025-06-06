@@ -2,13 +2,18 @@
 
 import { Draggable } from "@hello-pangea/dnd";
 import { PopulatedTask } from "../types";
-import { MoreHorizontal } from "lucide-react";
+import { Heart, MoreHorizontal } from "lucide-react";
 import { TaskDate } from "./task-date";
 import { TaskActions } from "./task-actions";
 import { useGetMembers } from "@/features/members/api/use-get-members";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { useFollowTask } from "../api/use-follow-task";
+import { useUnfollowTask } from "../api/use-unfollow-task";
+import { useCurrent } from "@/features/auth/api/use-current";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface KanbanCardProps {
   task: PopulatedTask;
@@ -19,11 +24,24 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
   const router = useRouter();
   const workspaceId = useWorkspaceId();
   const { data: members } = useGetMembers({ workspaceId });
+  const { data: currentUser } = useCurrent();
+  const { mutate: followTask } = useFollowTask();
+  const { mutate: unfollowTask } = useUnfollowTask();
 
   // Find the single assignee (not multiple assignees)
   const assignee = members?.documents?.find((member) => 
     member.$id === task.assigneeId
   );
+
+  // Check if current user is following this task
+  const isFollowing = currentUser && (() => {
+    try {
+      const followedIds = task.followedIds ? JSON.parse(task.followedIds) : [];
+      return followedIds.includes(currentUser.$id);
+    } catch {
+      return false;
+    }
+  })();
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent drag events from interfering
@@ -32,6 +50,7 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
     // Validate task ID format before navigation
     if (!task.$id || task.$id.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(task.$id)) {
       console.error("Invalid task ID format:", task.$id);
+      toast.error("Invalid task ID format");
       return;
     }
     
@@ -45,10 +64,21 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
     // Validate task ID format before navigation
     if (!task.$id || task.$id.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(task.$id)) {
       console.error("Invalid task ID format:", task.$id);
+      toast.error("Invalid task ID format");
       return;
     }
     
     router.push(`/workspaces/${workspaceId}/tasks/${task.$id}`);
+  };
+
+  const handleFollowToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isFollowing) {
+      unfollowTask({ param: { taskId: task.$id } });
+    } else {
+      followTask({ param: { taskId: task.$id } });
+    }
   };
 
   return (
@@ -70,11 +100,26 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
               <h3 className="text-sm font-semibold text-neutral-900 line-clamp-2 flex-1 leading-snug">
                 {task.name}
               </h3>
-              <TaskActions id={task.$id} projectId={task.projectId}>
-                <div className="opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity duration-200 p-2 hover:bg-neutral-100 rounded touch-manipulation">
-                  <MoreHorizontal className="size-4 text-neutral-500" />
-                </div>
-              </TaskActions>
+              <div className="flex items-center gap-x-1">
+                <button
+                  onClick={handleFollowToggle}
+                  className="opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity duration-200 p-2 hover:bg-neutral-100 rounded touch-manipulation"
+                >
+                  <Heart 
+                    className={cn(
+                      "size-4",
+                      isFollowing 
+                        ? "text-red-500 fill-red-500" 
+                        : "text-neutral-500"
+                    )} 
+                  />
+                </button>
+                <TaskActions id={task.$id} serviceId={task.serviceId}>
+                  <div className="opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity duration-200 p-2 hover:bg-neutral-100 rounded touch-manipulation">
+                    <MoreHorizontal className="size-4 text-neutral-500" />
+                  </div>
+                </TaskActions>
+              </div>
             </div>
           </div>
 

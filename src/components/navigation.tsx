@@ -1,6 +1,6 @@
 "use client";
 
-import { SettingsIcon, UsersIcon } from "lucide-react";
+import { Heart, SettingsIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { GoCheckCircle, GoCheckCircleFill, GoHome, GoHomeFill } from "react-icons/go";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
@@ -13,28 +13,35 @@ const routes = [
     href: "",
     icon: GoHome,
     activeIcon: GoHomeFill,
-    projectAware: false, // Home always goes to workspace level
+    serviceAware: false, // Home always goes to workspace level
   },
   {
     label: "My Tasks",
     href: "/tasks",
     icon: GoCheckCircle,
     activeIcon: GoCheckCircleFill,
-    projectAware: true, // Can be project-specific
+    serviceAware: true, // Can be service-specific
+  },
+  {
+    label: "Followed Tasks",
+    href: "/followed-tasks",
+    icon: Heart,
+    activeIcon: Heart,
+    serviceAware: false, // Always workspace-level
   },
   {
     label: "Members",
     href: "/members",
     icon: UsersIcon,
     activeIcon: UsersIcon,
-    projectAware: true, // Can be project-specific
+    serviceAware: true, // Can be service-specific
   },
    {
     label: "Setting",
     href: "/settings",
     icon: SettingsIcon,
     activeIcon: SettingsIcon,
-    projectAware: true, // Can be project-specific
+    serviceAware: true, // Can be service-specific
   },
 ];
 
@@ -42,26 +49,26 @@ export const Navigation = () => {
   const workspaceId = useWorkspaceId();
   const pathname = usePathname();
   
-  // Check if we're currently in a project context
-  const isInProjectContext = pathname.includes('/projects/');
-  const projectId = isInProjectContext ? pathname.match(/\/projects\/([^\/]+)/)?.[1] : null;
+  // Check if we're currently in a service context
+  const isInServiceContext = pathname.includes('/services/');
+  const serviceId = isInServiceContext ? pathname.match(/\/services\/([^\/]+)/)?.[1] : null;
 
   return (
     <ul className="flex flex-col">
       {routes.map((item) => {
-        // Determine the href based on project context
+        // Determine the href based on service context
         let fullHref: string;
         
-        if (item.projectAware && isInProjectContext && projectId) {
-          // Navigate to project-specific version
-          fullHref = `/workspaces/${workspaceId}/projects/${projectId}${item.href}`;
+        if (item.serviceAware && isInServiceContext && serviceId) {
+          // Navigate to service-specific version
+          fullHref = `/workspaces/${workspaceId}/services/${serviceId}${item.href}`;
         } else {
           // Navigate to workspace-level version
           fullHref = `/workspaces/${workspaceId}${item.href}`;
         }
         
         const isActive = pathname === fullHref || 
-          (item.projectAware && isInProjectContext && pathname.startsWith(fullHref));
+          (item.serviceAware && isInServiceContext && pathname.startsWith(fullHref));
         const Icon = isActive ? item.activeIcon : item.icon;
 
         return (

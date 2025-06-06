@@ -4,7 +4,7 @@ import { TaskStatus } from "../types";
 
 interface UseGetTasksProps {
   workspaceId: string;
-  projectId?: string | null;
+  serviceId?: string | null;
   status?: TaskStatus | null;
   assigneeId?: string | null;
   search?: string | null;
@@ -14,7 +14,7 @@ interface UseGetTasksProps {
 
 export const useGetTasks = ({
   workspaceId,
-  projectId,
+  serviceId,
   status,
   search,
   assigneeId,
@@ -25,7 +25,7 @@ export const useGetTasks = ({
     queryKey: [
       "tasks",
       workspaceId,
-      projectId,
+      serviceId,
       status,
       search,
       assigneeId,
@@ -35,7 +35,7 @@ export const useGetTasks = ({
       const response = await client.api.tasks.$get({
         query: {
           workspaceId,
-          projectId: projectId ?? undefined,
+          serviceId: serviceId ?? undefined,
           status: status ?? undefined,
           assigneeId: assigneeId ?? undefined,
           search: search ?? undefined,

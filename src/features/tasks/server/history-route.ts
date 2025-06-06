@@ -27,8 +27,21 @@ const app = new Hono()
       const user = c.get("user");
       const { taskId } = c.req.param();
 
+      // Validate taskId format
+      if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+        return c.json({ error: "Invalid task ID format" }, 400);
+      }
+
       // Verify task exists and user has access
-      const task = await databases.getDocument(DATABASE_ID, TASKS_ID, taskId);
+      let task;
+      try {
+        task = await databases.getDocument(DATABASE_ID, TASKS_ID, taskId);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+          return c.json({ error: "Task not found" }, 404);
+        }
+        throw error;
+      }
       
       const member = await getMember({
         databases,
@@ -66,8 +79,21 @@ const app = new Hono()
       const user = c.get("user");
       const { taskId, action, field, oldValue, newValue, details } = c.req.valid("json");
 
+      // Validate taskId format
+      if (!taskId || taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(taskId)) {
+        return c.json({ error: "Invalid task ID format" }, 400);
+      }
+
       // Verify task exists and user has access
-      const task = await databases.getDocument(DATABASE_ID, TASKS_ID, taskId);
+      let task;
+      try {
+        task = await databases.getDocument(DATABASE_ID, TASKS_ID, taskId);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'type' in error && error.type === 'document_not_found') {
+          return c.json({ error: "Task not found" }, 404);
+        }
+        throw error;
+      }
       
       const member = await getMember({
         databases,

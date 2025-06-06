@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DottedSeparator } from "./dotted-separator";
 import { Navigation } from "./navigation";
 import { WorkspaceSwitcher } from "./workspace-switcher";
-import { ProjectSwitcher } from "./project-switcher";
+import { ServiceSwitcher } from "./service-switcher";
 import { useLogout } from "@/features/auth/api/use-logout";
 import { Button } from "./ui/button";
 import { LogOutIcon } from "lucide-react";
@@ -38,7 +38,7 @@ export const Sidebar = () => {
         <DottedSeparator className="my-3 sm:my-4" />
         < Navigation />
         <DottedSeparator className="my-3 sm:my-4" />
-        < ProjectSwitcher />
+        < ServiceSwitcher />
       </div>
 
       <div className="flex flex-col gap-4">

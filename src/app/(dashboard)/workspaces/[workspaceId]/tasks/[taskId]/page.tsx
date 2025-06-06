@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { useGetTask } from "@/features/tasks/api/use-get-task";
 import { useGetMembers } from "@/features/members/api/use-get-members";
-import { useGetProjects } from "@/features/projects/api/use-get-project";
+import { useGetServices } from "@/features/services/api/use-get-services";
 import { useUpdateTask } from "@/features/tasks/api/use-update-task";
 import { useCreateTaskHistory } from "@/features/tasks/api/use-create-task-history";
+import { useGetUsers } from "@/features/users/api/use-get-users";
+import { useFollowTask } from "@/features/tasks/api/use-follow-task";
+import { useUnfollowTask } from "@/features/tasks/api/use-unfollow-task";
+import { useCurrent } from "@/features/auth/api/use-current";
 import { TaskHistoryAction } from "@/features/tasks/types/history";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeftIcon, CalendarIcon, FolderIcon, UserIcon, EditIcon, SaveIcon, XIcon, FileTextIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarIcon, FolderIcon, UserIcon, EditIcon, SaveIcon, XIcon, FileTextIcon, Heart, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { snakeCaseTotitleCase } from "@/lib/utils";
 import { TaskActions } from "@/features/tasks/components/task-actions";
@@ -42,16 +46,11 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
     description: "",
     status: "" as TaskStatus,
     assigneeId: "",
-    projectId: "",
+    serviceId: "",
     dueDate: new Date(),
     attachmentId: "",
   });
 
-  // Validate task ID format
-  if (!params.taskId || params.taskId.length > 36 || !/^[a-zA-Z0-9_]+$/.test(params.taskId)) {
-    console.error("Invalid task ID in URL:", params.taskId);
-  }
-  
   const { data: task, isLoading: isLoadingTask } = useGetTask({ 
     taskId: params.taskId 
   });
@@ -60,14 +59,52 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
     workspaceId 
   });
   
-  const { data: projects, isLoading: isLoadingProjects } = useGetProjects({ 
+  const { data: services, isLoading: isLoadingServices } = useGetServices({ 
     workspaceId 
   });
 
+  const { data: users, isLoading: isLoadingUsers } = useGetUsers();
+  const { data: currentUser } = useCurrent();
+
   const { mutate: updateTask, isPending: isUpdating } = useUpdateTask();
   const { mutate: createHistory } = useCreateTaskHistory();
+  const { mutate: followTask, isPending: isFollowing } = useFollowTask();
+  const { mutate: unfollowTask, isPending: isUnfollowing } = useUnfollowTask();
 
-  const isLoading = isLoadingTask || isLoadingMembers || isLoadingProjects;
+  // Validate task ID format after hooks
+  const isInvalidTaskId = !params.taskId || params.taskId.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(params.taskId);
+  
+  if (isInvalidTaskId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+        <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+          <div className="flex flex-col items-center justify-center h-96">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <FileTextIcon className="w-8 h-8 text-gray-400" />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold text-gray-900">Invalid Task ID</h1>
+                <p className="text-gray-600 max-w-md">
+                  The task ID format is invalid. Please check the URL and try again.
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => router.back()}
+                className="mt-6 hover:bg-gray-50 transition-colors"
+              >
+                <ArrowLeftIcon className="size-4 mr-2" />
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isLoading = isLoadingTask || isLoadingMembers || isLoadingServices || isLoadingUsers;
 
   if (isLoading) {
     return (
@@ -140,9 +177,35 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
     (member) => member.$id === task.assigneeId
   );
 
-  const project = projects?.documents.find(
-    (proj) => proj.$id === task.projectId
+  const service = services?.documents.find(
+    (serv) => serv.$id === task.serviceId
   );
+
+  // Get followers information
+  const followedIds = task ? (() => {
+    try {
+      return task.followedIds ? JSON.parse(task.followedIds) : [];
+    } catch {
+      return [];
+    }
+  })() : [];
+
+  const followers = users?.users.filter(user => 
+    followedIds.includes(user.$id)
+  ) || [];
+
+  const isCurrentUserFollowing = currentUser && followedIds.includes(currentUser.$id);
+
+  // Handle follow/unfollow
+  const handleToggleFollow = () => {
+    if (!task || !currentUser) return;
+
+    if (isCurrentUserFollowing) {
+      unfollowTask({ param: { taskId: task.$id } });
+    } else {
+      followTask({ param: { taskId: task.$id } });
+    }
+  };
 
   // Initialize edit form when entering edit mode
   const handleEditMode = () => {
@@ -152,7 +215,7 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
         description: task.description || "",
         status: task.status,
         assigneeId: task.assigneeId,
-        projectId: task.projectId,
+        serviceId: task.serviceId,
         dueDate: task.dueDate ? new Date(task.dueDate) : new Date(),
         attachmentId: task.attachmentId || "",
       });
@@ -172,7 +235,7 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
       description: editForm.description,
       status: editForm.status,
       assigneeId: editForm.assigneeId,
-      projectId: editForm.projectId,
+      serviceId: editForm.serviceId,
       dueDate: editForm.dueDate.toISOString(),
       attachmentId: editForm.attachmentId, // Send empty string to remove attachment
       workspaceId,
@@ -253,7 +316,7 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
               <div className="h-4 w-px bg-gray-300" />
               <div className="flex items-center gap-x-2 text-sm text-gray-600">
                 <FolderIcon className="size-4" />
-                <span>{project?.name || "No project"}</span>
+                <span>{service?.name || "No service"}</span>
               </div>
             </div>
             
@@ -311,7 +374,7 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
                     <EditIcon className="size-4 mr-2" />
                     Edit Task
                   </Button>
-                  <TaskActions id={task.$id} projectId={task.projectId}>
+                  <TaskActions id={task.$id} serviceId={task.serviceId}>
                     <Button variant="outline" size="sm" className="hover:bg-gray-50 transition-colors">
                       More Actions
                     </Button>
@@ -498,24 +561,24 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
                     )}
                   </div>
 
-                  {/* Project */}
+                  {/* Service */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                       <div className="w-2 h-2 bg-orange-500 rounded-full" />
-                      Project
+                      Service
                     </label>
                     {isEditing ? (
                       <Select
-                        value={editForm.projectId}
-                        onValueChange={(value) => setEditForm(prev => ({ ...prev, projectId: value }))}
+                        value={editForm.serviceId}
+                        onValueChange={(value) => setEditForm(prev => ({ ...prev, serviceId: value }))}
                       >
                         <SelectTrigger className="w-full border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
-                          <SelectValue placeholder="Select project" />
+                          <SelectValue placeholder="Select service" />
                         </SelectTrigger>
                         <SelectContent>
-                          {projects?.documents.map((proj) => (
-                            <SelectItem key={proj.$id} value={proj.$id}>
-                              📁 {proj.name}
+                          {services?.documents.map((serv) => (
+                            <SelectItem key={serv.$id} value={serv.$id}>
+                              📁 {serv.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -524,7 +587,7 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
                       <div className="flex items-center gap-3 p-3 bg-gray-50/80 rounded-lg border border-gray-200/60 shadow-sm">
                         <FolderIcon className="size-4 text-gray-500" />
                         <span className="text-sm font-medium">
-                          {project?.name || "No project"}
+                          {service?.name || "No service"}
                         </span>
                       </div>
                     )}
@@ -581,6 +644,44 @@ export default function TaskDetailsPage({ params }: TaskDetailsPageProps) {
                         )}
                       </div>
                     )}
+                  </div>
+
+                  {/* Followers */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-pink-500 rounded-full" />
+                      Followers ({followers.length})
+                    </label>
+                    <div className="p-3 bg-gray-50/80 rounded-lg border border-gray-200/60 shadow-sm space-y-2">
+                      {/* Follow/Unfollow Button */}
+                      <Button
+                        variant={isCurrentUserFollowing ? "primary" : "outline"}
+                        size="sm"
+                        onClick={handleToggleFollow}
+                        disabled={isFollowing || isUnfollowing || !currentUser}
+                        className="w-full"
+                      >
+                        <Heart className={`size-4 mr-2 ${isCurrentUserFollowing ? 'fill-current' : ''}`} />
+                        {isCurrentUserFollowing ? 'Following' : 'Follow'}
+                      </Button>
+                      
+                      {/* Followers List */}
+                      {followers.length > 0 ? (
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-600 font-medium">Followed by:</p>
+                          <div className="space-y-1">
+                            {followers.map((follower) => (
+                              <div key={follower.$id} className="flex items-center gap-2 text-sm">
+                                <Users className="size-3 text-gray-500" />
+                                <span className="text-gray-700">{follower.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500 text-center">No followers yet</p>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

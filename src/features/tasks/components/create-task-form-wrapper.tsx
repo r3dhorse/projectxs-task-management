@@ -1,7 +1,8 @@
 "use client"
 
 import { useGetMembers } from "@/features/members/api/use-get-members";
-import { useGetProjects } from "@/features/projects/api/use-get-project";
+import { useGetServices } from "@/features/services/api/use-get-services";
+import { useGetUsers } from "@/features/users/api/use-get-users";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -16,12 +17,13 @@ export const CreateTaskFormWrapper = ({
 }: CreateTaskFormWrapperProps) => {
   const workspaceId = useWorkspaceId();
 
-  const { data: projects, isLoading: isLoadingProjects } = useGetProjects({ workspaceId });
+  const { data: services, isLoading: isLoadingServices } = useGetServices({ workspaceId });
   const { data: members, isLoading: isLoadingMembers } = useGetMembers({ workspaceId });
+  const { data: users, isLoading: isLoadingUsers } = useGetUsers();
 
-  const projectOptions = projects?.documents.map((project) => ({
-    id: project.$id,
-    name: project.name,
+  const serviceOptions = services?.documents.map((service) => ({
+    id: service.$id,
+    name: service.name,
   }));
 
   const memberOptions = members?.documents.map((member) => ({
@@ -29,7 +31,12 @@ export const CreateTaskFormWrapper = ({
     name: member.name,
   }));
 
-  const isLoading = isLoadingProjects || isLoadingMembers;
+  const userOptions = users?.users.map((user) => ({
+    id: user.$id,
+    name: user.name,
+  }));
+
+  const isLoading = isLoadingServices || isLoadingMembers || isLoadingUsers;
 
   if (isLoading) {
     return (
@@ -44,8 +51,9 @@ export const CreateTaskFormWrapper = ({
   return (
     <CreateTaskForm
       onCancel={onCancel}
-      projectOptions={projectOptions ?? []}
+      serviceOptions={serviceOptions ?? []}
       membertOptions={memberOptions ?? []}
+      userOptions={userOptions ?? []}
       workspaceId={workspaceId}
     />
   );

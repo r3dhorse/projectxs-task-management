@@ -22,7 +22,7 @@ export const TaskViewSwitcher = () => {
   const [{
     status,
     assigneeId,
-    projectId,
+    serviceId,
     dueDate
   }] = useTaskFilters();
 
@@ -37,7 +37,7 @@ export const TaskViewSwitcher = () => {
     isLoading: isLoadingTasks
   } = useGetTasks({
     workspaceId,
-    projectId,
+    serviceId,
     assigneeId,
     status,
     dueDate,

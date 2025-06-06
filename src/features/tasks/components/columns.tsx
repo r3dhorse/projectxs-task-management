@@ -31,7 +31,7 @@ export const columns: ColumnDef<PopulatedTask>[] = [
     }
   },
   {
-    accessorKey: "project",
+    accessorKey: "service",
     header: ({ column }) => {
       return (
         <Button
@@ -40,17 +40,17 @@ export const columns: ColumnDef<PopulatedTask>[] = [
             column.toggleSorting(column.getIsSorted() === "asc")
           }
         >
-          Project
+          Service
           <ArrowUpDown className="ml-3 h-4 w-4" />
         </Button>
       )
     },
 
     cell: ({ row }) => {
-      const project = row.original?.project;
+      const service = row.original?.service;
       return (
         <div className="flex items-center gap-x-2 text-sm font-medium">
-          <p className="line-clamp-1">{project?.name || 'No Project'}</p>
+          <p className="line-clamp-1">{service?.name || 'No Service'}</p>
         </div>
       );
     }
@@ -144,10 +144,10 @@ export const columns: ColumnDef<PopulatedTask>[] = [
     id: "actions",
     cell: ({ row }) => {
       const id = row.original.$id;
-      const projectId = row.original.projectId;
+      const serviceId = row.original.serviceId;
 
       return (
-        <TaskActions id={id} projectId={projectId} deleteOnly={true} >
+        <TaskActions id={id} serviceId={serviceId} deleteOnly={true} >
           <Button variant="ghost" className="size-8 p-0">
             <Trash2 className="size-4" />
           </Button>

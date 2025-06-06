@@ -7,12 +7,12 @@ import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 interface TaskActionsProps {
   id: string;
-  projectId: string;
+  serviceId: string;
   children: React.ReactNode;
   deleteOnly?: boolean;
 };
 
-export const TaskActions = ({ id, projectId, children, deleteOnly = false }: TaskActionsProps) => {
+export const TaskActions = ({ id, serviceId, children, deleteOnly = false }: TaskActionsProps) => {
   const workspaceId = useWorkspaceId();
   const router = useRouter();
 
@@ -35,8 +35,8 @@ export const TaskActions = ({ id, projectId, children, deleteOnly = false }: Tas
     router.push(`/workspaces/${workspaceId}/tasks/${id}`);
   };
 
-  const onOpenProject = () => {
-    router.push(`/workspaces/${workspaceId}/projects/${projectId}`);
+  const onOpenService = () => {
+    router.push(`/workspaces/${workspaceId}/services/${serviceId}`);
   };
 
 
@@ -59,11 +59,11 @@ export const TaskActions = ({ id, projectId, children, deleteOnly = false }: Tas
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                onClick={onOpenProject}
+                onClick={onOpenService}
                 className="font-medium p-[10px]"
               >
                 <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
-                Open Project
+                Open Service
               </DropdownMenuItem>
             </>
           )}
