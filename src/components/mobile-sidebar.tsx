@@ -21,13 +21,13 @@ export const MobileSidebar = () => {
         <Button
           size="icon"
           variant="primary"
-          className="lg:hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:bg-muted active:bg-muted p-2"
+          className="lg:hidden focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:bg-muted active:bg-muted p-2 min-h-[44px] min-w-[44px] touch-manipulation"
           aria-label="Open menu"
         >
-          <MenuIcon className="size-5 text-neutral-300" />
+          <MenuIcon className="size-6 text-neutral-300" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0">
+      <SheetContent side="left" className="p-0 w-80 sm:w-96">
         <Sidebar />
       </SheetContent>
     </Sheet>

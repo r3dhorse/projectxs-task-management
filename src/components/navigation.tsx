@@ -68,12 +68,12 @@ export const Navigation = () => {
           <Link key={item.href} href={fullHref}>
             <div
               className={cn(
-                "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-primary transition text-neutral-500",
+                "flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-md font-medium hover:text-primary transition text-neutral-500 min-h-[44px] touch-manipulation",
                 isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
               )}
             >
-              <Icon className={cn("size-5", isActive ? "text-primary" : "text-neutral-500")} />
-              {item.label}
+              <Icon className={cn("size-5 flex-shrink-0", isActive ? "text-primary" : "text-neutral-500")} />
+              <span className="text-sm sm:text-base truncate">{item.label}</span>
             </div>
           </Link>
         );

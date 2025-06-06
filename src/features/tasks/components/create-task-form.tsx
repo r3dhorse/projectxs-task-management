@@ -68,15 +68,15 @@ export const CreateTaskForm = ({
 
   return (
     <Card className="w-full h-full border-none shadow-none">
-      <CardHeader className="flex p-7">
+      <CardHeader className="flex p-4 sm:p-7">
         <CardTitle className="text-xl font-bold">
           Create a new task
         </CardTitle>
       </CardHeader>
-      <div className="px-7">
+      <div className="px-4 sm:px-7">
         <DottedSeparator />
       </div>
-      <CardContent className="p-7">
+      <CardContent className="p-4 sm:p-7">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-y-4">
@@ -242,14 +242,14 @@ export const CreateTaskForm = ({
               </div>
 
               <DottedSeparator />
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-center gap-3 sm:justify-between">
                 <Button
                   type="button"
                   size="lg"
                   variant="secondary"
                   onClick={onCancel}
                   disabled={isPending}
-                  className={cn(!onCancel && "invisible")}
+                  className={cn(!onCancel && "invisible", "w-full sm:w-auto min-h-[44px] touch-manipulation")}
                 >
                   Cancel
                 </Button>
@@ -257,6 +257,7 @@ export const CreateTaskForm = ({
                 <Button
                   type="submit"
                   size="lg"
+                  className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                   disabled={isPending}
                 >
                   Create Task

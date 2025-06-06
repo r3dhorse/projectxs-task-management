@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import { Navbar } from "@/components/navbar";
 import { CreateProjectModal } from "@/features/projects/components/create-project-modal";
 import { CreateTaskModal } from "@/features/tasks/components/create-task-modal";
 import { EditTaskModal } from "@/features/tasks/components/edit-task-modal";
@@ -20,6 +21,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <Sidebar />
         </div>
         <div className="lg:pl-[264px] w-full">
+          <div className="lg:hidden">
+            <Navbar />
+          </div>
           <div className="mx-auto max-w-screen-2xl h-full px-4">
             <main className="h-full py-4 flex flex-col">
               {children}

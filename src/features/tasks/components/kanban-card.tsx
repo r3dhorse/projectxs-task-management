@@ -25,12 +25,25 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
     member.$id === task.assigneeId
   );
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleCardClick = (e: React.MouseEvent) => {
     // Prevent drag events from interfering
     e.stopPropagation();
     
     // Validate task ID format before navigation
-    if (!task.$id || task.$id.length > 36 || !/^[a-zA-Z0-9_]+$/.test(task.$id)) {
+    if (!task.$id || task.$id.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(task.$id)) {
+      console.error("Invalid task ID format:", task.$id);
+      return;
+    }
+    
+    router.push(`/workspaces/${workspaceId}/tasks/${task.$id}`);
+  };
+
+  const handleCardDoubleClick = (e: React.MouseEvent) => {
+    // Prevent drag events from interfering
+    e.stopPropagation();
+    
+    // Validate task ID format before navigation
+    if (!task.$id || task.$id.length > 36 || !/^[a-zA-Z0-9_-]+$/.test(task.$id)) {
       console.error("Invalid task ID format:", task.$id);
       return;
     }
@@ -45,8 +58,9 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           ref={provided.innerRef}
-          onDoubleClick={handleDoubleClick}
-          className={`group bg-white rounded-lg shadow-sm border-2 border-neutral-200/80 overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-lg hover:border-blue-300/60 hover:bg-blue-50/30 ${
+          onClick={handleCardClick}
+          onDoubleClick={handleCardDoubleClick}
+          className={`group bg-white rounded-lg shadow-sm border-2 border-neutral-200/80 overflow-hidden cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-lg hover:border-blue-300/60 hover:bg-blue-50/30 touch-manipulation ${
             snapshot.isDragging ? "opacity-75 rotate-1 shadow-xl border-blue-400" : ""
           }`}
         >
@@ -57,7 +71,7 @@ export const KanbanCard = ({ task, index }: KanbanCardProps) => {
                 {task.name}
               </h3>
               <TaskActions id={task.$id} projectId={task.projectId}>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-neutral-100 rounded">
+                <div className="opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity duration-200 p-2 hover:bg-neutral-100 rounded touch-manipulation">
                   <MoreHorizontal className="size-4 text-neutral-500" />
                 </div>
               </TaskActions>

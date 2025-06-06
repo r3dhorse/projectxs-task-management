@@ -18,26 +18,26 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className="h-full w-64 bg-neutral-100 p-6 flex flex-col justify-between border-r"
+      className="h-full w-64 sm:w-72 lg:w-64 bg-neutral-100 p-4 sm:p-6 flex flex-col justify-between border-r"
       aria-label="Sidebar"
     >
       <div>
-        <Link href="/" className="block mb-6">
+        <Link href="/" className="block mb-4 sm:mb-6">
           <Image 
             src="/logo.svg" 
             alt="Task Management - Go to homepage" 
             width={200} 
             height={60} 
-            className="h-15 w-auto"
+            className="h-12 sm:h-15 w-auto"
             priority
           />
         </Link>
 
-        <DottedSeparator className="my-4" />
+        <DottedSeparator className="my-3 sm:my-4" />
         <WorkspaceSwitcher />
-        <DottedSeparator className="my-4" />
+        <DottedSeparator className="my-3 sm:my-4" />
         < Navigation />
-        <DottedSeparator className="my-4" />
+        <DottedSeparator className="my-3 sm:my-4" />
         < ProjectSwitcher />
       </div>
 

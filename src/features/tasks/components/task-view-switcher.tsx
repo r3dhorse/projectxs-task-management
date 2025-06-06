@@ -58,17 +58,17 @@ export const TaskViewSwitcher = () => {
       <div className="h-full flex flex-col overflow-auto p-4 space-y-4">
 
         {/* Header Section: Tabs + New Button */}
-        <div className="flex flex-col lg:flex-row justify-between lg:items-center space-y-2 lg:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center space-y-3 sm:space-y-0 gap-3">
           {/* Tabs List */}
-          <TabsList className="w-full lg:w-auto">
+          <TabsList className="w-full sm:w-auto">
             <TabsTrigger
-              className="h-8 w-full lg:w-auto"
+              className="h-10 w-full sm:w-auto touch-manipulation"
               value="table"
             >
               Table
             </TabsTrigger>
             <TabsTrigger
-              className="h-8 w-full lg:w-auto"
+              className="h-10 w-full sm:w-auto touch-manipulation"
               value="kanban"
             >
               Kanban
@@ -77,16 +77,14 @@ export const TaskViewSwitcher = () => {
           </TabsList>
 
           {/* Button with vertical margin on mobile */}
-          <div className="flex flex-col w-full lg:w-auto space-y-2">
-            <Button
-              onClick={open}
-              size="sm"
-              className="w-full lg:w-auto bg-primary text-white hover:bg-primary/90"
-            >
-              <PlusIcon className="size-4 mr-2" />
-              New
-            </Button>
-          </div>
+          <Button
+            onClick={open}
+            size="sm"
+            className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 min-h-[44px] touch-manipulation"
+          >
+            <PlusIcon className="size-4 mr-2" />
+            New
+          </Button>
         </div>
 
         <DottedSeparator />

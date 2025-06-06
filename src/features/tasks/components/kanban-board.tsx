@@ -100,7 +100,7 @@ const DoneColumn = ({ board, tasks, isExpanded, onToggle, taskCount }: DoneColum
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="flex flex-col gap-y-2 min-h-[200px]"
+              className="flex flex-col gap-y-2 min-h-[200px] touch-manipulation"
             >
               {tasks.map((task, index) => (
                 <KanbanCard key={task.$id} task={task} index={index} />
@@ -263,11 +263,11 @@ export const KanbanBoard = ({ data, onChange }: KanbanBoardProps) => {
   return (
     <div className="relative">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className={`flex overflow-x-auto transition-all duration-300 ${
+        <div className={`flex overflow-x-auto gap-2 pb-4 transition-all duration-300 ${
           isUpdating ? 'blur-sm opacity-75' : ''
         }`}>
           {boards.map((board) => (
-            <div key={board.key} className="flex-1 mx-2 bg-muted/70 border border-neutral-200/60 p-1.5 rounded-lg min-w-[200px] shadow-sm backdrop-blur-sm">
+            <div key={board.key} className="flex-shrink-0 w-72 sm:w-80 bg-muted/70 border border-neutral-200/60 p-1.5 rounded-lg shadow-sm backdrop-blur-sm">
               {board.key === TaskStatus.DONE ? (
                 <DoneColumn
                   board={board}
