@@ -26,7 +26,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
   const { mutate, isPending } = useCreateWorkspace();
   const { data: user } = useCurrent();
   
-  const isAdmin = canCreateWorkspace(user);
+  const isAdmin = canCreateWorkspace(user ?? null);
 
 
 

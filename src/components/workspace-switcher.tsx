@@ -23,7 +23,7 @@ export const WorkspaceSwitcher = () => {
   const { open } = useCreateWorkspaceModal();
   const { data: user } = useCurrent();
   
-  const isAdmin = canCreateWorkspace(user);
+  const isAdmin = canCreateWorkspace(user ?? null);
   const onSelect = (id: string) => {
     router.push(`/workspaces/${id}`);
   };

@@ -8,7 +8,13 @@ const MockTaskForm = ({
   projects = [],
   members = [] 
 }: { 
-  onSubmit: (data: any) => void
+  onSubmit: (data: {
+    name: FormDataEntryValue | null
+    description: FormDataEntryValue | null
+    projectId: FormDataEntryValue | null
+    assigneeId: FormDataEntryValue | null
+    status: FormDataEntryValue | string
+  }) => void
   isPending?: boolean
   projects?: Array<{ id: string; name: string }>
   members?: Array<{ id: string; name: string }>

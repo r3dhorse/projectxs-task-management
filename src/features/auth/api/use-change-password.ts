@@ -16,7 +16,7 @@ export const useChangePassword = () => {
       const response = await client.api.auth["change-password"]["$post"]({ json });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json() as { error?: string };
         throw new Error(errorData.error || "Failed to change password");
       }
 

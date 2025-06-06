@@ -3,7 +3,7 @@ import { render, screen, userEvent } from '@/test-utils'
 
 // Mock workspace creation component
 const MockCreateWorkspaceForm = ({ onSubmit, isPending = false }: { 
-  onSubmit: (data: any) => void
+  onSubmit: (data: { name: FormDataEntryValue | null }) => void
   isPending?: boolean 
 }) => {
   const handleSubmit = (e: React.FormEvent) => {

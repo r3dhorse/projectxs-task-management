@@ -1,14 +1,14 @@
 import React from 'react'
-import { render, screen, userEvent, waitFor } from '@/test-utils'
+import { render, screen, userEvent } from '@/test-utils'
 
 // Mock the auth components to avoid dependency issues
-const MockSignInForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
+const MockSignInForm = ({ onSubmit }: { onSubmit: (data: { email: string | null; password: string | null }) => void }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const formData = new FormData(e.target as HTMLFormElement)
     onSubmit({
-      email: formData.get('email'),
-      password: formData.get('password'),
+      email: formData.get('email') as string | null,
+      password: formData.get('password') as string | null,
     })
   }
 

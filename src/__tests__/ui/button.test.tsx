@@ -21,7 +21,7 @@ describe('Button Component', () => {
       expect(button).toHaveClass('bg-gray-300', 'text-gray-900')
     })
 
-    it('renders destructive button correctly', () => { 5+
+    it('renders destructive button correctly', () => {
       render(<Button variant="destructive">Delete</Button>)
       
       const button = screen.getByRole('button', { name: /delete/i })

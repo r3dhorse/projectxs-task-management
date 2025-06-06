@@ -59,8 +59,9 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const handleRowDoubleClick = (row: any) => {
-    const taskId = row.original.$id;
+  const handleRowDoubleClick = (row: { original: unknown }) => {
+    const original = row.original as { $id?: string };
+    const taskId = original.$id;
     if (taskId && workspaceId) {
       router.push(`/workspaces/${workspaceId}/tasks/${taskId}`);
     }

@@ -21,7 +21,7 @@ export const useCreateWorkspace = () => {
       const response = await client.api.workspaces["$post"]({ json });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json() as { error?: string };
         if (response.status === 403) {
           throw new Error(errorData.error || "Unauthorized to create workspace");
         }
