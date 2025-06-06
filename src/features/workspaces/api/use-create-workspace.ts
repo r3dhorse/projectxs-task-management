@@ -21,6 +21,10 @@ export const useCreateWorkspace = () => {
       const response = await client.api.workspaces["$post"]({ json });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 403) {
+          throw new Error(errorData.error || "Unauthorized to create workspace");
+        }
         throw new Error("Failed to create workspace");
       }
 
@@ -33,8 +37,12 @@ export const useCreateWorkspace = () => {
 
     },
 
-    onError: () => {
-      toast.error("Failed to create workspace");
+    onError: (error) => {
+      if (error.message.includes("Unauthorized") || error.message.includes("admin")) {
+        toast.error("Only admin users can create workspaces");
+      } else {
+        toast.error("Failed to create workspace");
+      }
     },
 
   });

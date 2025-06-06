@@ -81,7 +81,14 @@ const app = new Hono()
       const user = c.get("user");
       const { name, description } = c.req.valid("json")
 
-
+      // Check if user has admin label
+      const isAdmin = user.labels && user.labels.includes("admin");
+      
+      if (!isAdmin) {
+        return c.json({ 
+          error: "Unauthorized. Only admin users can create workspaces." 
+        }, 403);
+      }
 
       const workspace = await databases.createDocument(
         DATABASE_ID,

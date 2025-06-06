@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { useCreateWorkspace } from "../api/use-create-workspace";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useCurrent } from "@/features/auth/api/use-current";
+import { canCreateWorkspace } from "@/features/auth/utils";
 
 
 interface CreateWorkspaceFormProps {
@@ -22,6 +24,9 @@ interface CreateWorkspaceFormProps {
 export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
   const router = useRouter();
   const { mutate, isPending } = useCreateWorkspace();
+  const { data: user } = useCurrent();
+  
+  const isAdmin = canCreateWorkspace(user);
 
 
 
@@ -49,6 +54,11 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
         <CardTitle className="text-xl font-bold">
           Create a new workspace
         </CardTitle>
+        {!isAdmin && (
+          <p className="text-sm text-muted-foreground text-red-600">
+            Only admin users can create workspaces
+          </p>
+        )}
       </CardHeader>
       <div className="px-7">
         <DottedSeparator />
@@ -111,7 +121,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={isPending}
+                  disabled={isPending || !isAdmin}
                 >
                   Create Workspace
                 </Button>

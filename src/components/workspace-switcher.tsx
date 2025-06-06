@@ -13,12 +13,17 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRouter } from "next/navigation";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useCreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal";
+import { useCurrent } from "@/features/auth/api/use-current";
+import { canCreateWorkspace } from "@/features/auth/utils";
 
 export const WorkspaceSwitcher = () => {
   const workspaceId = useWorkspaceId();
   const router = useRouter();
   const { data: workspaces, isLoading, isError } = useGetWorkspaces();
   const { open } = useCreateWorkspaceModal();
+  const { data: user } = useCurrent();
+  
+  const isAdmin = canCreateWorkspace(user);
   const onSelect = (id: string) => {
     router.push(`/workspaces/${id}`);
   };
@@ -27,7 +32,9 @@ export const WorkspaceSwitcher = () => {
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase text-neutral-500">Workspaces</p>
-        <RiAddCircleFill onClick={open} className="size-6 text-neutral-950 cursor-pointer hover:opacity-75 transition" />
+        {isAdmin && (
+          <RiAddCircleFill onClick={open} className="size-6 text-neutral-950 cursor-pointer hover:opacity-75 transition" />
+        )}
       </div>
 
       {isLoading ? (
